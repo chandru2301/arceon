@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { 
   GitBranch, 
   Star, 
@@ -87,9 +88,11 @@ export function GitHubHeader() {
           <NavigationMenu className="hidden lg:flex">
             <NavigationMenuList className="space-x-1">
               <NavigationMenuItem>
-                <Button variant="glass" className="text-sm font-medium">
-                  Dashboard
-                </Button>
+                <Link to="/">
+                  <Button variant="glass" className="text-sm font-medium">
+                    Dashboard
+                  </Button>
+                </Link>
               </NavigationMenuItem>
 
               <NavigationMenuItem>
@@ -101,27 +104,20 @@ export function GitHubHeader() {
                   <div className="glass-card w-80 p-4">
                     <div className="space-y-3">
                       <div>
-                        <h4 className="font-medium text-sm mb-2 flex items-center">
-                          <TrendingUp className="w-4 h-4 mr-2 text-primary" />
-                          Trending Featured
-                        </h4>
-                        <div className="space-y-2 text-sm">
-                          <div className="flex items-center justify-between hover:bg-background/20 p-2 rounded">
-                            <span>react-dashboard</span>
-                            <Star className="w-3 h-3 text-primary" />
-                          </div>
-                          <div className="flex items-center justify-between hover:bg-background/20 p-2 rounded">
-                            <span>typescript-utils</span>
-                            <GitFork className="w-3 h-3 text-muted-foreground" />
-                          </div>
-                        </div>
-                      </div>
-                      <div>
-                        <h4 className="font-medium text-sm mb-2">My Projects</h4>
-                        <div className="space-y-2 text-sm">
-                          <div className="hover:bg-background/20 p-2 rounded">github-dashboard</div>
-                          <div className="hover:bg-background/20 p-2 rounded">portfolio-site</div>
-                        </div>
+                         <h4 className="font-medium text-sm mb-2 flex items-center">
+                           <TrendingUp className="w-4 h-4 mr-2 text-primary" />
+                           <Link to="/projects/featured" className="hover:text-primary">Trending Featured</Link>
+                         </h4>
+                       </div>
+                       <div>
+                         <h4 className="font-medium text-sm mb-2">
+                           <Link to="/projects/starred" className="hover:text-primary">Starred Projects</Link>
+                         </h4>
+                       </div>
+                       <div>
+                         <h4 className="font-medium text-sm mb-2">
+                           <Link to="/projects/my-projects" className="hover:text-primary">My Projects</Link>
+                         </h4>
                       </div>
                     </div>
                   </div>
@@ -136,27 +132,27 @@ export function GitHubHeader() {
                 <NavigationMenuContent>
                   <div className="glass-card w-72 p-4">
                     <div className="space-y-2">
-                      <div className="flex items-center hover:bg-background/20 p-2 rounded">
-                        <BarChart3 className="w-4 h-4 mr-3 text-primary" />
-                        <div>
-                          <div className="font-medium text-sm">Contribution Insights</div>
-                          <div className="text-xs text-muted-foreground">View your activity graph</div>
-                        </div>
-                      </div>
-                      <div className="flex items-center hover:bg-background/20 p-2 rounded">
-                        <Activity className="w-4 h-4 mr-3 text-primary" />
-                        <div>
-                          <div className="font-medium text-sm">Repository Health</div>
-                          <div className="text-xs text-muted-foreground">Issues, PRs, forks & stars</div>
-                        </div>
-                      </div>
-                      <div className="flex items-center hover:bg-background/20 p-2 rounded">
-                        <Calendar className="w-4 h-4 mr-3 text-primary" />
-                        <div>
-                          <div className="font-medium text-sm">Activity Summary</div>
-                          <div className="text-xs text-muted-foreground">Recent contributions</div>
-                        </div>
-                      </div>
+                       <Link to="/insights/contributions" className="flex items-center hover:bg-background/20 p-2 rounded transition-colors">
+                         <BarChart3 className="w-4 h-4 mr-3 text-primary" />
+                         <div>
+                           <div className="font-medium text-sm">Contribution Insights</div>
+                           <div className="text-xs text-muted-foreground">View your activity graph</div>
+                         </div>
+                       </Link>
+                       <Link to="/insights/health" className="flex items-center hover:bg-background/20 p-2 rounded transition-colors">
+                         <Activity className="w-4 h-4 mr-3 text-primary" />
+                         <div>
+                           <div className="font-medium text-sm">Repository Health</div>
+                           <div className="text-xs text-muted-foreground">Issues, PRs, forks & stars</div>
+                         </div>
+                       </Link>
+                       <Link to="/insights/activity" className="flex items-center hover:bg-background/20 p-2 rounded transition-colors">
+                         <Calendar className="w-4 h-4 mr-3 text-primary" />
+                         <div>
+                           <div className="font-medium text-sm">Activity Summary</div>
+                           <div className="text-xs text-muted-foreground">Recent contributions</div>
+                         </div>
+                       </Link>
                     </div>
                   </div>
                 </NavigationMenuContent>
@@ -170,34 +166,34 @@ export function GitHubHeader() {
                 <NavigationMenuContent>
                   <div className="glass-card w-72 p-4">
                     <div className="space-y-2">
-                      <div className="flex items-center hover:bg-background/20 p-2 rounded">
-                        <Calendar className="w-4 h-4 mr-3 text-primary" />
-                        <div>
-                          <div className="font-medium text-sm">Contribution Timeline</div>
-                          <div className="text-xs text-muted-foreground">Your daily activity</div>
-                        </div>
-                      </div>
-                      <div className="flex items-center hover:bg-background/20 p-2 rounded">
-                        <GitBranch className="w-4 h-4 mr-3 text-primary" />
-                        <div>
-                          <div className="font-medium text-sm">Recent Commits</div>
-                          <div className="text-xs text-muted-foreground">Latest code changes</div>
-                        </div>
-                      </div>
-                      <div className="flex items-center hover:bg-background/20 p-2 rounded">
-                        <Award className="w-4 h-4 mr-3 text-primary" />
-                        <div>
-                          <div className="font-medium text-sm">Achievements</div>
-                          <div className="text-xs text-muted-foreground">Badges and milestones</div>
-                        </div>
-                      </div>
-                      <div className="flex items-center hover:bg-background/20 p-2 rounded">
-                        <Users className="w-4 h-4 mr-3 text-primary" />
-                        <div>
-                          <div className="font-medium text-sm">Community Activity</div>
-                          <div className="text-xs text-muted-foreground">Followers and stars</div>
-                        </div>
-                      </div>
+                       <Link to="/activity/contribution-activity" className="flex items-center hover:bg-background/20 p-2 rounded transition-colors">
+                         <Calendar className="w-4 h-4 mr-3 text-primary" />
+                         <div>
+                           <div className="font-medium text-sm">Contribution Timeline</div>
+                           <div className="text-xs text-muted-foreground">Your daily activity</div>
+                         </div>
+                       </Link>
+                       <Link to="/insights/activity" className="flex items-center hover:bg-background/20 p-2 rounded transition-colors">
+                         <GitBranch className="w-4 h-4 mr-3 text-primary" />
+                         <div>
+                           <div className="font-medium text-sm">Recent Commits</div>
+                           <div className="text-xs text-muted-foreground">Latest code changes</div>
+                         </div>
+                       </Link>
+                       <Link to="/activity/achievements" className="flex items-center hover:bg-background/20 p-2 rounded transition-colors">
+                         <Award className="w-4 h-4 mr-3 text-primary" />
+                         <div>
+                           <div className="font-medium text-sm">Achievements</div>
+                           <div className="text-xs text-muted-foreground">Badges and milestones</div>
+                         </div>
+                       </Link>
+                       <Link to="/activity/community" className="flex items-center hover:bg-background/20 p-2 rounded transition-colors">
+                         <Users className="w-4 h-4 mr-3 text-primary" />
+                         <div>
+                           <div className="font-medium text-sm">Community Activity</div>
+                           <div className="text-xs text-muted-foreground">Followers and stars</div>
+                         </div>
+                       </Link>
                     </div>
                   </div>
                 </NavigationMenuContent>
@@ -248,13 +244,17 @@ export function GitHubHeader() {
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem className="cursor-pointer hover:bg-background/20">
-                  <Eye className="w-4 h-4 mr-3" />
-                  View Profile
+                <DropdownMenuItem asChild className="cursor-pointer hover:bg-background/20">
+                  <Link to="/profile" className="flex items-center">
+                    <Eye className="w-4 h-4 mr-3" />
+                    View Profile
+                  </Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem className="cursor-pointer hover:bg-background/20">
-                  <Settings className="w-4 h-4 mr-3" />
-                  Settings
+                <DropdownMenuItem asChild className="cursor-pointer hover:bg-background/20">
+                  <Link to="/settings" className="flex items-center">
+                    <Settings className="w-4 h-4 mr-3" />
+                    Settings
+                  </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem className="cursor-pointer hover:bg-background/20 text-red-400">
