@@ -1,174 +1,197 @@
 import React, { useState } from 'react';
+import { githubApi, authApi } from '@/services/api';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import config from '../config';
+import { Badge } from '@/components/ui/badge';
 
-export const BackendConfigTest: React.FC = () => {
-  const [testResult, setTestResult] = useState<string>('');
-  const [testing, setTesting] = useState(false);
+const BackendConfigTest: React.FC = () => {
+  const [testResults, setTestResults] = useState<Record<string, any>>({});
+  const [loading, setLoading] = useState<Record<string, boolean>>({});
 
-  const testBackendConfig = async () => {
-    setTesting(true);
-    setTestResult('Testing backend configuration...\n');
-    
-    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || config.apiBaseUrl;
-    
+  const runTest = async (testName: string, testFunction: () => Promise<any>) => {
+    setLoading(prev => ({ ...prev, [testName]: true }));
     try {
-      // Test 1: Check if backend is accessible
-      setTestResult(prev => prev + `\n1. Testing backend connectivity to: ${API_BASE_URL}\n`);
-      
-      const healthResponse = await fetch(`${API_BASE_URL}/actuator/health`, {
-        method: 'GET',
-        headers: { 'Accept': 'application/json' }
-      });
-      
-      if (healthResponse.ok) {
-        const healthData = await healthResponse.json();
-        setTestResult(prev => prev + `✅ Backend is accessible - Status: ${healthData.status}\n`);
-      } else {
-        setTestResult(prev => prev + `❌ Backend health check failed - Status: ${healthResponse.status}\n`);
-      }
-
-      // Test 2: Check OAuth endpoint
-      setTestResult(prev => prev + `\n2. Testing OAuth endpoint: ${API_BASE_URL}${config.github.authorizationUrl}\n`);
-      
-      const oauthResponse = await fetch(`${API_BASE_URL}${config.github.authorizationUrl}`, {
-        method: 'GET',
-        redirect: 'manual'
-      });
-      
-      if (oauthResponse.status === 302 || oauthResponse.status === 301) {
-        const location = oauthResponse.headers.get('location');
-        setTestResult(prev => prev + `✅ OAuth endpoint redirects correctly to: ${location}\n`);
-        
-        if (location?.includes('github.com')) {
-          setTestResult(prev => prev + `✅ Redirects to GitHub OAuth\n`);
-        } else {
-          setTestResult(prev => prev + `❌ Does not redirect to GitHub\n`);
-        }
-      } else {
-        setTestResult(prev => prev + `❌ OAuth endpoint failed - Status: ${oauthResponse.status}\n`);
-      }
-
-      // Test 3: Check CORS configuration
-      setTestResult(prev => prev + `\n3. Testing CORS configuration\n`);
-      
-      const corsResponse = await fetch(`${API_BASE_URL}/api/user`, {
-        method: 'OPTIONS',
-        headers: {
-          'Origin': window.location.origin,
-          'Access-Control-Request-Method': 'GET',
-          'Access-Control-Request-Headers': 'Authorization, Content-Type'
-        }
-      });
-      
-      const allowOrigin = corsResponse.headers.get('access-control-allow-origin');
-      const allowCredentials = corsResponse.headers.get('access-control-allow-credentials');
-      
-      setTestResult(prev => prev + `CORS Allow-Origin: ${allowOrigin}\n`);
-      setTestResult(prev => prev + `CORS Allow-Credentials: ${allowCredentials}\n`);
-      
-      if (allowOrigin === window.location.origin || allowOrigin === '*') {
-        setTestResult(prev => prev + `✅ CORS origin configured correctly\n`);
-      } else {
-        setTestResult(prev => prev + `❌ CORS origin not configured for ${window.location.origin}\n`);
-      }
-
-      // Test 4: Check token endpoint
-      setTestResult(prev => prev + `\n4. Testing token endpoint (should fail without code)\n`);
-      
-      const tokenResponse = await fetch(`${API_BASE_URL}/api/token`, {
-        method: 'GET',
-        credentials: 'include'
-      });
-      
-      setTestResult(prev => prev + `Token endpoint status: ${tokenResponse.status}\n`);
-      
-      if (tokenResponse.status === 400 || tokenResponse.status === 401) {
-        setTestResult(prev => prev + `✅ Token endpoint exists and requires authentication\n`);
-      } else {
-        setTestResult(prev => prev + `❌ Token endpoint unexpected response\n`);
-      }
-
-      // Test 5: Configuration summary
-      setTestResult(prev => prev + `\n5. Configuration Summary:\n`);
-      setTestResult(prev => prev + `Frontend URL: ${window.location.origin}\n`);
-      setTestResult(prev => prev + `Backend URL: ${API_BASE_URL}\n`);
-      setTestResult(prev => prev + `OAuth Redirect URI: ${config.github.redirectUri}\n`);
-      setTestResult(prev => prev + `OAuth Authorization URL: ${API_BASE_URL}${config.github.authorizationUrl}\n`);
-      
-      setTestResult(prev => prev + `\n✅ Backend configuration test completed\n`);
-      
-    } catch (error) {
-      setTestResult(prev => prev + `\n❌ Test failed with error: ${error.message}\n`);
+      const result = await testFunction();
+      setTestResults(prev => ({ 
+        ...prev, 
+        [testName]: { success: true, data: result } 
+      }));
+    } catch (error: any) {
+      setTestResults(prev => ({ 
+        ...prev, 
+        [testName]: { 
+          success: false, 
+          error: error.response?.data || error.message 
+        } 
+      }));
     } finally {
-      setTesting(false);
+      setLoading(prev => ({ ...prev, [testName]: false }));
     }
   };
 
-  const generateBackendConfig = () => {
-    const frontendUrl = window.location.origin;
-    const backendUrl = import.meta.env.VITE_API_BASE_URL || config.apiBaseUrl;
-    
-    const springConfig = `
-# Spring Boot Application Properties for GitHub OAuth
+  const tests = [
+    {
+      name: 'Health Check',
+      function: () => githubApi.healthCheck(),
+      description: 'Test basic connectivity to backend'
+    },
+    {
+      name: 'Auth Check',
+      function: () => authApi.checkAuth(),
+      description: 'Test authentication status'
+    },
+    {
+      name: 'Get JWT Token',
+      function: () => authApi.getJwtToken(),
+      description: 'Test JWT token generation'
+    },
+    {
+      name: 'User Profile',
+      function: () => githubApi.getUserProfile(),
+      description: 'Test GitHub profile endpoint'
+    },
+    {
+      name: 'User Repositories',
+      function: () => githubApi.getUserRepositories(5),
+      description: 'Test repositories endpoint'
+    },
+    {
+      name: 'User Followers',
+      function: () => githubApi.getFollowers(),
+      description: 'Test followers endpoint'
+    },
+    {
+      name: 'Starred Repositories',
+      function: () => githubApi.getUserStarredRepositories(),
+      description: 'Test starred repos endpoint'
+    },
+    {
+      name: 'Trending Repositories',
+      function: () => githubApi.getTrendingRepositories(),
+      description: 'Test trending repos endpoint'
+    },
+    {
+      name: 'User Contributions',
+      function: () => githubApi.getUserContributions(),
+      description: 'Test GraphQL contributions endpoint'
+    },
+    {
+      name: 'Pinned Repositories',
+      function: () => githubApi.getPinnedRepos(),
+      description: 'Test GraphQL pinned repos endpoint'
+    }
+  ];
 
-# Server configuration
-server.port=8080
+  const runAllTests = async () => {
+    for (const test of tests) {
+      await runTest(test.name, test.function);
+      // Small delay between tests
+      await new Promise(resolve => setTimeout(resolve, 500));
+    }
+  };
 
-# GitHub OAuth2 Configuration
-spring.security.oauth2.client.registration.github.client-id=\${GITHUB_CLIENT_ID}
-spring.security.oauth2.client.registration.github.client-secret=\${GITHUB_CLIENT_SECRET}
-spring.security.oauth2.client.registration.github.scope=user:email,read:user,repo,read:org
-spring.security.oauth2.client.registration.github.redirect-uri=${config.github.redirectUri}
-spring.security.oauth2.client.registration.github.authorization-grant-type=authorization_code
+  const getResultColor = (testName: string) => {
+    const result = testResults[testName];
+    if (!result) return 'bg-gray-100';
+    return result.success ? 'bg-green-100' : 'bg-red-100';
+  };
 
-# GitHub OAuth2 Provider
-spring.security.oauth2.client.provider.github.authorization-uri=https://github.com/login/oauth/authorize
-spring.security.oauth2.client.provider.github.token-uri=https://github.com/login/oauth/access_token
-spring.security.oauth2.client.provider.github.user-info-uri=https://api.github.com/user
-spring.security.oauth2.client.provider.github.user-name-attribute=login
-
-# CORS Configuration
-cors.allowed-origins=${frontendUrl}
-cors.allowed-methods=GET,POST,PUT,DELETE,OPTIONS
-cors.allowed-headers=*
-cors.allow-credentials=true
-
-# Session configuration
-server.servlet.session.cookie.same-site=none
-server.servlet.session.cookie.secure=true
-`;
-
-    setTestResult(springConfig);
+  const getResultIcon = (testName: string) => {
+    const result = testResults[testName];
+    if (!result) return '⏳';
+    return result.success ? '✅' : '❌';
   };
 
   return (
-    <Card className="w-full max-w-4xl mx-auto">
-      <CardHeader>
-        <CardTitle className="flex justify-between items-center">
-          <span>Backend Configuration Test</span>
-          <div className="flex gap-2">
-            <button 
-              onClick={testBackendConfig}
-              disabled={testing}
-              className="px-3 py-1 bg-blue-500 text-white text-sm rounded hover:bg-blue-600 disabled:opacity-50"
-            >
-              {testing ? 'Testing...' : 'Test Backend'}
-            </button>
-            <button 
-              onClick={generateBackendConfig}
-              className="px-3 py-1 bg-green-500 text-white text-sm rounded hover:bg-green-600"
-            >
-              Generate Config
-            </button>
+    <div className="container mx-auto p-6 space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            🔧 Backend Configuration Test
+            <Badge variant="outline">Debug Tool</Badge>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            <div className="flex gap-2">
+              <Button 
+                onClick={runAllTests}
+                disabled={Object.values(loading).some(Boolean)}
+                className="bg-blue-600 hover:bg-blue-700"
+              >
+                🚀 Run All Tests
+              </Button>
+              <Button 
+                onClick={() => setTestResults({})}
+                variant="outline"
+              >
+                🗑️ Clear Results
+              </Button>
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-2">
+              {tests.map((test) => (
+                <Card key={test.name} className={getResultColor(test.name)}>
+                  <CardHeader className="pb-2">
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="text-sm font-medium">
+                        {getResultIcon(test.name)} {test.name}
+                      </CardTitle>
+                      <Button
+                        size="sm"
+                        onClick={() => runTest(test.name, test.function)}
+                        disabled={loading[test.name]}
+                        variant="outline"
+                      >
+                        {loading[test.name] ? '⏳' : '▶️'}
+                      </Button>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-xs text-gray-600 mb-2">{test.description}</p>
+                    {testResults[test.name] && (
+                      <div className="text-xs">
+                        {testResults[test.name].success ? (
+                          <div className="text-green-700">
+                            <strong>Success:</strong> 
+                            <pre className="mt-1 p-2 bg-white rounded text-xs overflow-auto max-h-20">
+                              {JSON.stringify(testResults[test.name].data, null, 2)}
+                            </pre>
+                          </div>
+                        ) : (
+                          <div className="text-red-700">
+                            <strong>Error:</strong> 
+                            <pre className="mt-1 p-2 bg-white rounded text-xs overflow-auto max-h-20">
+                              {JSON.stringify(testResults[test.name].error, null, 2)}
+                            </pre>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+
+            <div className="mt-6 p-4 bg-gray-50 rounded-lg">
+              <h3 className="font-semibold mb-2">📊 Test Summary</h3>
+              <div className="grid grid-cols-3 gap-4 text-sm">
+                <div>
+                  <strong>Total Tests:</strong> {tests.length}
+                </div>
+                <div>
+                  <strong>Passed:</strong> {Object.values(testResults).filter(r => r?.success).length}
+                </div>
+                <div>
+                  <strong>Failed:</strong> {Object.values(testResults).filter(r => !r?.success).length}
+                </div>
+              </div>
+            </div>
           </div>
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <pre className="bg-gray-100 dark:bg-gray-800 p-4 rounded-md overflow-auto text-xs whitespace-pre-wrap">
-          {testResult || 'Click "Test Backend" to run configuration tests or "Generate Config" to see required Spring Boot configuration.'}
-        </pre>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+    </div>
   );
-}; 
+};
+
+export default BackendConfigTest; 

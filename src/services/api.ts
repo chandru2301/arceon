@@ -35,6 +35,20 @@ api.interceptors.request.use(
   }
 );
 
+// Response interceptor to handle authentication errors
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      // Clear token on authentication error
+      localStorage.removeItem('github_token');
+      // Optionally redirect to login
+      window.location.href = '/';
+    }
+    return Promise.reject(error);
+  }
+);
+
 // Utility for handling OAuth errors
 const parseOAuthError = (error: string | null, errorDescription: string | null) => {
   if (!error) return null;
@@ -69,11 +83,34 @@ export const authApi = {
         console.error('❌ No token in response:', response.data);
         return { success: false, error: 'No token received from server' };
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('💥 OAuth callback API error:', error);
       return { 
         success: false, 
-        error: error.response?.data?.message || error.message || 'Failed to exchange code for token' 
+        error: error.response?.data || error.message || 'Failed to exchange code for token' 
+      };
+    }
+  },
+  
+  // Get JWT token from OAuth2 authentication
+  getJwtToken: async () => {
+    try {
+      console.log('🔄 API: Getting JWT token...');
+      const response = await api.get('/api/auth/jwt');
+      
+      if (response.data?.token) {
+        localStorage.setItem('github_token', response.data.token);
+        console.log('✅ JWT token saved successfully');
+        return { success: true, token: response.data.token };
+      } else {
+        console.error('❌ No JWT token in response:', response.data);
+        return { success: false, error: 'No JWT token received from server' };
+      }
+    } catch (error: any) {
+      console.error('💥 JWT token API error:', error);
+      return { 
+        success: false, 
+        error: error.response?.data || error.message || 'Failed to get JWT token' 
       };
     }
   },
@@ -87,7 +124,7 @@ export const authApi = {
         isAuthenticated: true, 
         user: response.data 
       };
-    } catch (error) {
+    } catch (error: any) {
       console.log('❌ Not authenticated:', error);
       return { 
         isAuthenticated: false, 
@@ -100,10 +137,10 @@ export const authApi = {
   logout: async () => {
     try {
       console.log('🔄 API: Logging out...');
-      await api.post('/api/logout');
+      // Clear local token
       localStorage.removeItem('github_token');
       return true;
-    } catch (error) {
+    } catch (error: any) {
       console.error('💥 Logout error:', error);
       // Still remove the token
       localStorage.removeItem('github_token');
@@ -114,11 +151,11 @@ export const authApi = {
 
 export const githubApi = {
   // Get user repositories
-  getUserRepositories: async () => {
+  getUserRepositories: async (per_page: number = 30, sort: string = 'updated') => {
     try {
-      const response = await api.get('/api/github/repositories');
+      const response = await api.get(`/api/github/repositories?per_page=${per_page}&sort=${sort}`);
       return response.data;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to fetch repositories:', error);
       throw error;
     }
@@ -129,7 +166,7 @@ export const githubApi = {
     try {
       const response = await api.get('/api/github/profile');
       return response.data;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to fetch profile:', error);
       throw error;
     }
@@ -140,7 +177,7 @@ export const githubApi = {
     try {
       const response = await api.get('/api/github/pull-requests');
       return response.data;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to fetch pull requests:', error);
       throw error;
     }
@@ -151,7 +188,7 @@ export const githubApi = {
     try {
       const response = await api.get('/api/github/commits');
       return response.data;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to fetch commits:', error);
       throw error;
     }
@@ -162,7 +199,7 @@ export const githubApi = {
     try {
       const response = await api.get('/api/github/user-issues');
       return response.data;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to fetch issues:', error);
       throw error;
     }
@@ -173,8 +210,19 @@ export const githubApi = {
     try {
       const response = await api.get('/api/github/activity');
       return response.data;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to fetch activity:', error);
+      throw error;
+    }
+  },
+
+  // Get user followers
+  getFollowers: async () => {
+    try {
+      const response = await api.get('/api/github/followers');
+      return response.data;
+    } catch (error: any) {
+      console.error('Failed to fetch followers:', error);
       throw error;
     }
   },
@@ -186,7 +234,7 @@ export const githubApi = {
       const response = await api.get('/api/github/starred');
       console.log('🔄 API: Starred repositories fetched:', response.data);
       return response.data;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to fetch starred repositories:', error);
       throw error;
     }
@@ -198,7 +246,7 @@ export const githubApi = {
       const response = await api.get('/api/github/trending');
       console.log('🔄 API: Trending repositories fetched:', response.data);
       return response.data;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to fetch trending repositories:', error);
       throw error;
     }
@@ -210,19 +258,19 @@ export const githubApi = {
       const response = await api.get('/api/github/activity');
       console.log('🔄 API: User events fetched:', response.data);
       return response.data;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to fetch events:', error);
       throw error;
     }
   },
 
-  // Get user contributions
+  // Get user contributions using GraphQL
   getUserContributions: async () => {
     try {
       const response = await api.post('/api/github/contributions');
       console.log('🔄 API: User contributions fetched:', response.data);
       return response.data;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to fetch contributions:', error);
       throw error;
     }
@@ -233,19 +281,30 @@ export const githubApi = {
     try {
       const response = await api.get('/api/github/stars');
       return response.data;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to fetch total stars:', error);
       throw error;
     }
   },
 
-  // Get pinned repositories
+  // Get pinned repositories using GraphQL
   getPinnedRepos: async () => {
     try {
       const response = await api.post('/api/github/pinned');
       return response.data;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to fetch pinned repositories:', error);
+      throw error;
+    }
+  },
+
+  // Health check endpoint
+  healthCheck: async () => {
+    try {
+      const response = await api.get('/api/health');
+      return response.data;
+    } catch (error: any) {
+      console.error('Failed to check health:', error);
       throw error;
     }
   }
