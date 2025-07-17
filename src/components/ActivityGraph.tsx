@@ -5,9 +5,51 @@ import { githubApi } from '@/services/api';
 import { useAuth } from '@/contexts/AuthContext';
 
 interface ActivityData {
+  items: {
+    [key: string]: any;
+  }
+}
+
+interface ContributionDay {
+  contributionCount: number;
   date: string;
-  count: number;
-  level: number;
+  weekday: number;
+}
+
+interface ContributionWeek {
+  contributionDays: ContributionDay[];
+  firstDay: string;
+}
+
+interface ContributionCalendar {
+  totalContributions: number;
+  weeks: ContributionWeek[];
+}
+
+interface ContributionResponse {
+  data: {
+    user: {
+      contributionsCollection: {
+        contributionCalendar: ContributionCalendar;
+      };
+    };
+  };
+}
+
+interface GitHubEvent {
+  id: string;
+  type: string;
+  totalContributions: number;
+  actor: {
+    login: string;
+    avatar_url: string;
+  };
+  repo: {
+    name: string;
+  };
+  payload: any;
+  created_at: string;
+  public: boolean;
 }
 
 export function ActivityGraph() {
@@ -16,6 +58,92 @@ export function ActivityGraph() {
   const [activityData, setActivityData] = useState<ActivityData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const getContributionLevel = (count: number): number => {
+    if (count === 0) return 0;
+    if (count <= 3) return 1;
+    if (count <= 6) return 2;
+    if (count <= 9) return 3;
+    if (count <= 12) return 4;
+    return 5;
+  };
+
+  const convertContributionData = (contributionResponse: ContributionResponse): ActivityData[] => {
+    const calendar = contributionResponse.data.user.contributionsCollection.contributionCalendar;
+    const contributionData: ActivityData[] = [];
+    
+    // Flatten weeks into individual days
+    calendar.weeks.forEach(week => {
+      week.contributionDays.forEach(day => {
+        contributionData.push({
+          items: {
+            date: day.date,
+            count: day.contributionCount,
+            level: getContributionLevel(day.contributionCount) // Scale to 0-5 levels
+          }
+        });
+      });
+    });
+    
+    return contributionData;
+  };
+
+  const convertEventsToContributions = (events: GitHubEvent[]): ActivityData[] => {
+    const today = new Date();
+    const contributions: { [key: string]: number } = {};
+    
+    // Initialize 365 days with 0 contributions
+    for (let i = 364; i >= 0; i--) {
+      const date = new Date(today);
+      date.setDate(date.getDate() - i);
+      const dateKey = date.toISOString().split('T')[0];
+      contributions[dateKey] = 0;
+    }
+    
+    // Count events by date
+    events.forEach(event => {
+      const eventDate = new Date(event.created_at);
+      const dateKey = eventDate.toISOString().split('T')[0];
+      
+      if (contributions[dateKey] !== undefined) {
+        // Different event types contribute differently
+        let contributionValue = 1;
+        switch (event.type) {
+          case 'PushEvent':
+            contributionValue = 3; // Commits are worth more
+            break;
+          case 'CreateEvent':
+            contributionValue = 2; // Creating repos/branches
+            break;
+          case 'WatchEvent':
+            contributionValue = 1; // Starring repos
+            break;
+          case 'ForkEvent':
+            contributionValue = 2; // Forking repos
+            break;
+          case 'IssuesEvent':
+            contributionValue = 1; // Issues
+            break;
+          case 'PullRequestEvent':
+            contributionValue = 2; // Pull requests
+            break;
+          default:
+            contributionValue = 1;
+        }
+        
+        contributions[dateKey] += contributionValue;
+      }
+    });
+    
+    // Convert to ActivityData format
+    return Object.entries(contributions).map(([date, count]) => ({
+      items: {
+        date,
+        count,
+        level: Math.min(Math.floor(count / 2), 5) // Scale to 0-5 levels
+      }
+    }));
+  };
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -27,8 +155,28 @@ export function ActivityGraph() {
     try {
       setLoading(true);
       setError(null);
-      const data = await githubApi.getActivity();
-      setActivityData(data);
+      
+      // Try to get contribution data first
+      try {
+        const contributionResponse = await githubApi.getUserContributions();
+        if (contributionResponse && contributionResponse.data && contributionResponse.data.user) {
+          const contributionData = convertContributionData(contributionResponse);
+          setActivityData(contributionData);
+          return;
+        }
+      } catch (contributionError) {
+        console.log('Contribution API not available, falling back to events...');
+      }
+      
+      // Fallback to events data and convert to contribution format
+      const eventsData = await githubApi.getUserEvents();
+      if (eventsData && Array.isArray(eventsData)) {
+        const contributionData = convertEventsToContributions(eventsData);
+        setActivityData(contributionData);
+      } else {
+        // If no valid data structure, generate mock data
+        generateMockActivityData();
+      }
     } catch (error) {
       console.error('Failed to fetch activity data:', error);
       setError('Failed to load activity data');
@@ -57,9 +205,11 @@ export function ActivityGraph() {
       const activityLevel = Math.floor(randomFactor * baseActivity * 6);
       
       data.push({
-        date: date.toISOString().split('T')[0],
-        count: activityLevel * 2,
-        level: Math.min(activityLevel, 5)
+        items: {
+          date: date.toISOString().split('T')[0],
+          count: activityLevel * 2,
+          level: Math.min(activityLevel, 5)
+        }
       });
     }
     
@@ -97,11 +247,24 @@ export function ActivityGraph() {
   };
 
   const getActivityStats = () => {
-    const totalContributions = activityData.reduce((sum, day) => sum + day.count, 0);
-    const activeDays = activityData.filter(day => day.count > 0).length;
+    if (!activityData || activityData.length === 0) {
+      return {
+        totalContributions: 0,
+        activeDays: 0,
+        maxStreak: 0,
+        currentStreak: 0
+      };
+    }
+
+    const totalContributions = activityData.reduce((sum, day) => {
+      const count = day.items?.count ?? 0;
+      return sum + count;
+    }, 0);
+  
+    const activeDays = activityData.filter(day => (day.items?.count ?? 0) > 0).length;
     const maxStreak = calculateMaxStreak();
     const currentStreak = calculateCurrentStreak();
-    
+  
     return {
       totalContributions,
       activeDays,
@@ -111,11 +274,15 @@ export function ActivityGraph() {
   };
 
   const calculateMaxStreak = () => {
+    if (!activityData || activityData.length === 0) {
+      return 0;
+    }
+
     let maxStreak = 0;
     let currentStreak = 0;
     
     for (const day of activityData) {
-      if (day.count > 0) {
+      if (day.items?.count > 0) {
         currentStreak++;
         maxStreak = Math.max(maxStreak, currentStreak);
       } else {
@@ -127,10 +294,14 @@ export function ActivityGraph() {
   };
 
   const calculateCurrentStreak = () => {
+    if (!activityData || activityData.length === 0) {
+      return 0;
+    }
+
     let streak = 0;
     
     for (let i = activityData.length - 1; i >= 0; i--) {
-      if (activityData[i].count > 0) {
+      if (activityData[i].items?.count > 0) {
         streak++;
       } else {
         break;
@@ -238,13 +409,24 @@ export function ActivityGraph() {
 
               {/* Activity grid */}
               <div className="grid grid-cols-53 gap-1 grid-rows-7">
-                {activityData.map((day, index) => (
-                  <div
-                    key={index}
-                    className={`contribution-square ${getContributionClass(day.level)}`}
-                    title={`${day.count} contributions on ${day.date}`}
-                  />
-                ))}
+                {activityData && activityData.length > 0 ? (
+                  activityData.slice(-371).map((day, index) => ( // Show last 371 days (53 weeks * 7 days)
+                    <div
+                      key={index}
+                      className={`contribution-square ${getContributionClass(day.items?.level ?? 0)}`}
+                      title={`${day.items?.count ?? 0} contributions on ${new Date(day.items?.date ?? '').toLocaleDateString()}`}
+                    />
+                  ))
+                ) : (
+                  // Render empty grid when no data
+                  Array.from({ length: 371 }, (_, index) => ( // 53 weeks * 7 days
+                    <div
+                      key={index}
+                      className="contribution-square contribution-0"
+                      title="No contributions"
+                    />
+                  ))
+                )}
               </div>
             </div>
 

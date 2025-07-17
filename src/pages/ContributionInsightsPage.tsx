@@ -6,10 +6,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 export default function ContributionInsightsPage() {
   const stats = [
-    { label: "Total Contributions", value: "1,247", change: "+12%" },
-    { label: "Current Streak", value: "23 days", change: "+5 days" },
-    { label: "Longest Streak", value: "89 days", change: "Personal best" },
-    { label: "Average per Day", value: "3.4", change: "+0.8" }
+      { label: "Total Contributions", value: "1,247", change: "+12%" },
+      { label: "Current Streak", value: "23 days", change: "+5 days" },
+      { label: "Longest Streak", value: "89 days", change: "Personal best" },
+      { label: "Average per Day", value: "3.4", change: "+0.8" }
   ];
 
   return (

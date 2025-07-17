@@ -4,37 +4,11 @@ import { Footer } from '@/components/Footer';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { useState, useEffect } from 'react';
+import { githubApi } from '@/services/api';
 
 export default function RepoHealthPage() {
-  const repositories = [
-    {
-      name: "github-dashboard",
-      health: 92,
-      openIssues: 3,
-      openPRs: 1,
-      stars: 127,
-      forks: 23,
-      status: "Excellent"
-    },
-    {
-      name: "portfolio-site",
-      health: 78,
-      openIssues: 7,
-      openPRs: 2,
-      stars: 45,
-      forks: 8,
-      status: "Good"
-    },
-    {
-      name: "api-wrapper",
-      health: 65,
-      openIssues: 12,
-      openPRs: 5,
-      stars: 89,
-      forks: 15,
-      status: "Needs Attention"
-    }
-  ];
+  const [repositories, setRepositories] = useState<any[]>([]);
 
   const getHealthColor = (health: number) => {
     if (health >= 80) return "text-green-500";
@@ -47,6 +21,14 @@ export default function RepoHealthPage() {
     if (status === "Good") return "secondary";
     return "destructive";
   };
+
+  useEffect(() => {
+    const fetchRepositories = async () => {
+      const data = await githubApi.getUserRepositories();
+      setRepositories(data);
+    };
+    fetchRepositories();
+  }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background/95 to-primary/5">
@@ -67,7 +49,7 @@ export default function RepoHealthPage() {
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <CardTitle className="flex items-center gap-2">
-                    {repo.name}
+                      {repo.name}
                     <Badge variant={getStatusVariant(repo.status)}>
                       {repo.status}
                     </Badge>

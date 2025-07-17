@@ -46,11 +46,7 @@ export function Footer() {
 
           {/* Right Section */}
           <div className="flex items-center space-x-4">
-            <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-              <span>Made with</span>
-              <Heart className="w-4 h-4 text-red-500" />
-              <span>by developers</span>
-            </div>
+            
             <Button
               variant="github"
               size="sm"

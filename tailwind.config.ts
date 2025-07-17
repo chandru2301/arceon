@@ -71,6 +71,9 @@ export default {
 				md: 'calc(var(--radius) - 2px)',
 				sm: 'calc(var(--radius) - 4px)'
 			},
+			gridTemplateColumns: {
+				'53': 'repeat(53, minmax(0, 1fr))',
+			},
 			keyframes: {
 				'accordion-down': {
 					from: {

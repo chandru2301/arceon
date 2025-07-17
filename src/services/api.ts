@@ -176,6 +176,77 @@ export const githubApi = {
       console.error('Failed to fetch activity:', error);
       throw error;
     }
+  },
+
+  // Get user starred repositories
+  getUserStarredRepositories: async () => {
+    try {
+      console.log('🔄 API: Fetching starred repositories...');
+      const response = await api.get('/api/github/starred');
+      console.log('🔄 API: Starred repositories fetched:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch starred repositories:', error);
+      throw error;
+    }
+  },
+
+  // Get trending repositories
+  getTrendingRepositories: async () => {
+    try {
+      const response = await api.get('/api/github/trending');
+      console.log('🔄 API: Trending repositories fetched:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch trending repositories:', error);
+      throw error;
+    }
+  },
+
+  // Get user events
+  getUserEvents: async () => {
+    try {
+      const response = await api.get('/api/github/activity');
+      console.log('🔄 API: User events fetched:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch events:', error);
+      throw error;
+    }
+  },
+
+  // Get user contributions
+  getUserContributions: async () => {
+    try {
+      const response = await api.post('/api/github/contributions');
+      console.log('🔄 API: User contributions fetched:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch contributions:', error);
+      throw error;
+    }
+  },
+
+  // Get total stars
+  getTotalStars: async () => {
+    try {
+      const response = await api.get('/api/github/stars');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch total stars:', error);
+      throw error;
+    }
+  },
+
+  // Get pinned repositories
+  getPinnedRepos: async () => {
+    try {
+      const response = await api.post('/api/github/pinned');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch pinned repositories:', error);
+      throw error;
+    }
   }
 };
 

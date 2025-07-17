@@ -1,39 +1,43 @@
-import { Star, GitFork, ExternalLink } from 'lucide-react';
+import { Star, GitFork, ExternalLink, Loader2 } from 'lucide-react';
 import { GitHubHeader } from '@/components/GitHubHeader';
 import { Footer } from '@/components/Footer';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { useState, useEffect } from 'react';
+import { githubApi } from '@/services/api';
+interface StarredProjectOwner {
+  login: string;
+  id: number;
+  avatar_url: string;
+  html_url: string;
+}
+
+interface StarredProject {
+  id: number;
+  name: string;
+  full_name: string;
+  description: string | null;
+  stargazers_count: number;
+  forks_count: number;
+  language: string | null;
+  updated_at: string;
+  private: boolean;
+  owner: StarredProjectOwner;
+  html_url: string;
+}
 
 export default function StarredProjectsPage() {
-  const starredProjects = [
-    {
-      id: 1,
-      name: "facebook/react",
-      description: "The library for web and native user interfaces",
-      stars: "220k",
-      forks: "45k",
-      language: "JavaScript",
-      owner: "facebook"
-    },
-    {
-      id: 2,
-      name: "microsoft/vscode",
-      description: "Visual Studio Code",
-      stars: "158k",
-      forks: "28k",
-      language: "TypeScript",
-      owner: "microsoft"
-    },
-    {
-      id: 3,
-      name: "tailwindlabs/tailwindcss",
-      description: "A utility-first CSS framework for rapid UI development",
-      stars: "79k",
-      forks: "4k",
-      language: "CSS",
-      owner: "tailwindlabs"
-    }
-  ];
+  const [isLoading, setIsLoading] = useState(true);
+  const [starredProjects, setStarredProjects] = useState<StarredProject[]>([]);
+
+  useEffect(() => {
+    const fetchStarredProjects = async () => {
+      const data = await githubApi.getUserStarredRepositories();
+      setStarredProjects(data);
+      setIsLoading(false);
+    };
+    fetchStarredProjects();
+  }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background/95 to-primary/5">
@@ -46,7 +50,12 @@ export default function StarredProjectsPage() {
         </div>
 
         <div className="grid gap-6">
-          {starredProjects.map((project) => (
+          {isLoading ? (
+            <div className="flex justify-center items-center h-full">
+              <Loader2 className="w-8 h-8 animate-spin" />
+            </div>
+          ) : (
+            starredProjects.map((project) => (
             <Card key={project.id} className="glass-card hover:glass-card-hover transition-all duration-300">
               <CardHeader>
                 <CardTitle className="flex items-center justify-between">
@@ -68,17 +77,17 @@ export default function StarredProjectsPage() {
                   </div>
                   <div className="flex items-center space-x-1">
                     <Star className="w-4 h-4" />
-                    <span>{project.stars}</span>
+                    <span>{project.stargazers_count}</span>
                   </div>
                   <div className="flex items-center space-x-1">
                     <GitFork className="w-4 h-4" />
-                    <span>{project.forks}</span>
+                    <span>{project.forks_count}</span>
                   </div>
-                  <span className="text-xs">by {project.owner}</span>
+                  <span className="text-xs">by {project.owner.login}</span>
                 </div>
               </CardContent>
             </Card>
-          ))}
+          )))}
         </div>
       </main>
 

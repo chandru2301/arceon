@@ -1,43 +1,35 @@
-import { GitBranch, Star, GitFork, Clock } from 'lucide-react';
+import { GitBranch, Star, GitFork, Clock, Loader2 } from 'lucide-react';
 import { GitHubHeader } from '@/components/GitHubHeader';
 import { Footer } from '@/components/Footer';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { useState, useEffect } from 'react';
+import { githubApi } from '@/services/api';
 
 export default function MyProjectsPage() {
-  const myProjects = [
+  const [isLoading, setIsLoading] = useState(true);
+  const [myProjects, setMyProjects] = useState<any[]>([
     {
-      id: 1,
-      name: "github-dashboard",
-      description: "A modern GitHub dashboard with glassmorphism design",
-      stars: 127,
-      forks: 23,
-      language: "TypeScript",
-      updatedAt: "2 hours ago",
+      id: '',
+      name: '',
+      description: '',
+      stars: '',
+      forks: '',
+      language: '',
+      updatedAt: '',
       isPrivate: false
-    },
-    {
-      id: 2,
-      name: "portfolio-site",
-      description: "Personal portfolio website built with React and Tailwind",
-      stars: 45,
-      forks: 8,
-      language: "JavaScript",
-      updatedAt: "1 day ago",
-      isPrivate: false
-    },
-    {
-      id: 3,
-      name: "api-wrapper",
-      description: "A lightweight wrapper for GitHub API with TypeScript support",
-      stars: 89,
-      forks: 15,
-      language: "TypeScript",
-      updatedAt: "3 days ago",
-      isPrivate: true
     }
-  ];
+   
+  ]);
 
+  useEffect(() => {
+    const fetchMyProjects = async () => {
+      const data = await githubApi.getUserRepositories();
+      setMyProjects(data);
+      setIsLoading(false);
+    };
+    fetchMyProjects();
+  }, []);
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background/95 to-primary/5">
       <GitHubHeader />
@@ -49,7 +41,12 @@ export default function MyProjectsPage() {
         </div>
 
         <div className="grid gap-6">
-          {myProjects.map((project) => (
+          {isLoading ? (
+            <div className="flex justify-center items-center h-full">
+              <Loader2 className="w-8 h-8 animate-spin" />
+            </div>
+          ) : (
+            myProjects.map((project) => (
             <Card key={project.id} className="glass-card hover:glass-card-hover transition-all duration-300">
               <CardHeader>
                 <div className="flex items-start justify-between">
@@ -88,7 +85,7 @@ export default function MyProjectsPage() {
                 </div>
               </CardContent>
             </Card>
-          ))}
+          )))}
         </div>
       </main>
 

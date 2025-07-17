@@ -126,28 +126,28 @@ export function GitHubHeader() {
                   </Link>
                 </NavigationMenuItem>
 
-                <NavigationMenuItem>
+                <NavigationMenuItem className="relative">
                   <NavigationMenuTrigger className="bg-background/30 backdrop-blur-md border border-white/10 hover:bg-background/40">
                     <Folder className="w-4 h-4 mr-2" />
                     Projects
                   </NavigationMenuTrigger>
                   <NavigationMenuContent>
                     <div className="glass-card w-80 p-4">
-                      <div className="space-y-3">
-                        <div>
+                      <div className="space-y-3 relative">
+                        <div className="relative z-10">
                           <h4 className="font-medium text-sm mb-2 flex items-center">
                             <TrendingUp className="w-4 h-4 mr-2 text-primary" />
-                            <Link to="/projects/featured" className="hover:text-primary">Trending Featured</Link>
+                            <Link to="/projects/featured" className="hover:text-primary transition-colors">Trending Featured</Link>
                           </h4>
                         </div>
-                        <div>
+                        <div className="relative z-10">
                           <h4 className="font-medium text-sm mb-2">
-                            <Link to="/projects/starred" className="hover:text-primary">Starred Projects</Link>
+                            <Link to="/projects/starred" className="hover:text-primary transition-colors">Starred Projects</Link>
                           </h4>
                         </div>
-                        <div>
+                        <div className="relative z-10">
                           <h4 className="font-medium text-sm mb-2">
-                            <Link to="/projects/my-projects" className="hover:text-primary">My Projects</Link>
+                            <Link to="/projects/my-projects" className="hover:text-primary transition-colors">My Projects</Link>
                           </h4>
                         </div>
                       </div>
@@ -155,29 +155,29 @@ export function GitHubHeader() {
                   </NavigationMenuContent>
                 </NavigationMenuItem>
 
-                <NavigationMenuItem>
+                <NavigationMenuItem className="relative">
                   <NavigationMenuTrigger className="bg-background/30 backdrop-blur-md border border-white/10 hover:bg-background/40">
                     <BarChart3 className="w-4 h-4 mr-2" />
                     Insights
                   </NavigationMenuTrigger>
                   <NavigationMenuContent>
                     <div className="glass-card w-72 p-4">
-                      <div className="space-y-2">
-                        <Link to="/insights/contributions" className="flex items-center hover:bg-background/20 p-2 rounded transition-colors">
+                      <div className="space-y-2 relative">
+                        <Link to="/insights/contributions" className="flex items-center hover:bg-background/20 p-2 rounded transition-colors relative z-10 hover:z-20">
                           <BarChart3 className="w-4 h-4 mr-3 text-primary" />
                           <div>
                             <div className="font-medium text-sm">Contribution Insights</div>
                             <div className="text-xs text-muted-foreground">View your activity graph</div>
                           </div>
                         </Link>
-                        <Link to="/insights/health" className="flex items-center hover:bg-background/20 p-2 rounded transition-colors">
+                        <Link to="/insights/health" className="flex items-center hover:bg-background/20 p-2 rounded transition-colors relative z-10 hover:z-20">
                           <Activity className="w-4 h-4 mr-3 text-primary" />
                           <div>
                             <div className="font-medium text-sm">Repository Health</div>
                             <div className="text-xs text-muted-foreground">Issues, PRs, forks & stars</div>
                           </div>
                         </Link>
-                        <Link to="/insights/activity" className="flex items-center hover:bg-background/20 p-2 rounded transition-colors">
+                        <Link to="/insights/activity" className="flex items-center hover:bg-background/20 p-2 rounded transition-colors relative z-10 hover:z-20">
                           <Calendar className="w-4 h-4 mr-3 text-primary" />
                           <div>
                             <div className="font-medium text-sm">Activity Summary</div>
@@ -189,36 +189,36 @@ export function GitHubHeader() {
                   </NavigationMenuContent>
                 </NavigationMenuItem>
 
-                <NavigationMenuItem>
+                <NavigationMenuItem className="relative">
                   <NavigationMenuTrigger className="bg-background/30 backdrop-blur-md border border-white/10 hover:bg-background/40">
                     <Activity className="w-4 h-4 mr-2" />
                     Activity
                   </NavigationMenuTrigger>
                   <NavigationMenuContent>
                     <div className="glass-card w-72 p-4">
-                      <div className="space-y-2">
-                        <Link to="/activity/contribution-activity" className="flex items-center hover:bg-background/20 p-2 rounded transition-colors">
+                      <div className="space-y-2 relative">
+                        <Link to="/activity/contribution-activity" className="flex items-center hover:bg-background/20 p-2 rounded transition-colors relative z-10 hover:z-20">
                           <Calendar className="w-4 h-4 mr-3 text-primary" />
                           <div>
                             <div className="font-medium text-sm">Contribution Timeline</div>
                             <div className="text-xs text-muted-foreground">Your daily activity</div>
                           </div>
                         </Link>
-                        <Link to="/insights/activity" className="flex items-center hover:bg-background/20 p-2 rounded transition-colors">
+                        <Link to="/insights/activity" className="flex items-center hover:bg-background/20 p-2 rounded transition-colors relative z-10 hover:z-20">
                           <GitBranch className="w-4 h-4 mr-3 text-primary" />
                           <div>
                             <div className="font-medium text-sm">Recent Commits</div>
                             <div className="text-xs text-muted-foreground">Latest code changes</div>
                           </div>
                         </Link>
-                        <Link to="/activity/achievements" className="flex items-center hover:bg-background/20 p-2 rounded transition-colors">
+                        <Link to="/activity/achievements" className="flex items-center hover:bg-background/20 p-2 rounded transition-colors relative z-10 hover:z-20">
                           <Award className="w-4 h-4 mr-3 text-primary" />
                           <div>
                             <div className="font-medium text-sm">Achievements</div>
                             <div className="text-xs text-muted-foreground">Badges and milestones</div>
                           </div>
                         </Link>
-                        <Link to="/activity/community" className="flex items-center hover:bg-background/20 p-2 rounded transition-colors">
+                        <Link to="/activity/community" className="flex items-center hover:bg-background/20 p-2 rounded transition-colors relative z-10 hover:z-20">
                           <Users className="w-4 h-4 mr-3 text-primary" />
                           <div>
                             <div className="font-medium text-sm">Community Activity</div>
@@ -448,11 +448,11 @@ export function GitHubHeader() {
         </div>
 
         {/* Bio Section */}
-        {isAuthenticated && user?.bio && (
+        {/* {isAuthenticated && user?.bio && (
           <div className="mt-3 text-sm text-muted-foreground">
             {user.bio}
           </div>
-        )}
+        )} */}
 
         {/* Mobile Stats - Only show when authenticated */}
         {isAuthenticated && user && (
