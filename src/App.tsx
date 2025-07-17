@@ -21,6 +21,8 @@ import ProfilePage from "./pages/ProfilePage";
 import SettingsPage from "./pages/SettingsPage";
 import { Login } from "./components/login";
 import { DashboardRedirect } from "./components/DashboardRedirect";
+import { OAuthCallback } from "./components/OAuthCallback";
+import { AuthDebug } from "./components/AuthDebug";
 
 const queryClient = new QueryClient();
 
@@ -72,47 +74,35 @@ const AppRoutes: React.FC = () => {
 
   // Dashboard Route Component (handles OAuth2 success callback)
   const DashboardRoute: React.FC = () => {
-    const { checkAuth } = useAuth();
+    const { isAuthenticated, loading, checkAuth } = useAuth();
     const urlParams = new URLSearchParams(window.location.search);
     const code = urlParams.get('code');
 
-    // If we have a GitHub OAuth code, show the redirect component
+    // If we have a GitHub OAuth code, show the OAuth callback component
     if (code) {
-      console.log('🔄 OAuth code detected in URL, handling GitHub callback...');
-      
-      // Use effect to handle the code
-      useEffect(() => {
-        const handleOAuthCode = async () => {
-          try {
-            // Call checkAuth to handle the OAuth code
-            await checkAuth();
-            
-            // Clean up the URL by removing the code parameter
-            window.history.replaceState({}, document.title, '/dashboard');
-          } catch (error) {
-            console.error('Error handling OAuth code:', error);
-          }
-        };
-        
-        handleOAuthCode();
-      }, []);
-      
+      console.log('🔄 OAuth code detected in URL, showing OAuth callback component...');
+      return <OAuthCallback />;
+    }
+
+    // If loading, show loading indicator
+    if (loading) {
       return (
         <div className="min-h-screen bg-background flex items-center justify-center">
           <div className="text-center">
             <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-            <p className="text-muted-foreground">Completing authentication...</p>
+            <p className="text-muted-foreground">Loading authentication state...</p>
           </div>
         </div>
       );
     }
 
+    // If not authenticated, redirect to login
+    if (!isAuthenticated) {
+      return <Navigate to="/login" replace />;
+    }
+
     // Otherwise, show the protected dashboard
-    return (
-      <ProtectedRoute>
-        <Index />
-      </ProtectedRoute>
-    );
+    return <Index />;
   };
 
   return (
@@ -129,6 +119,14 @@ const AppRoutes: React.FC = () => {
       <Route 
         path="/dashboard" 
         element={<DashboardRoute />} 
+      />
+      <Route 
+        path="/auth-debug" 
+        element={<AuthDebug />} 
+      />
+      <Route 
+        path="/oauth/callback" 
+        element={<OAuthCallback />} 
       />
 
       {/* Projects Routes */}

@@ -1,142 +1,96 @@
-import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import React, { useEffect, useState } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useAuth } from '@/contexts/AuthContext';
+import config from '../config';
 
 export const AuthDebug: React.FC = () => {
-  const [results, setResults] = useState<any[]>([]);
-  const [loading, setLoading] = useState(false);
+  const { isAuthenticated, user, loading, checkAuth } = useAuth();
+  const [debugInfo, setDebugInfo] = useState<Record<string, any>>({});
 
-  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8081';
-
-  const addResult = (test: string, success: boolean, data: any) => {
-    setResults(prev => [...prev, { test, success, data, timestamp: new Date().toISOString() }]);
-  };
-
-  const testEndpoint = async (endpoint: string, description: string) => {
-    try {
-      const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-        method: 'GET',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-      });
-      const token = localStorage.getItem('github_token');
-      console.log("token", token);
-      
-      let responseData;
-      try {
-        responseData = await response.json();
-      } catch (e) {
-        responseData = { error: 'Failed to parse response as JSON' };
-      }
-      
-      addResult(description, response.ok, {
-        status: response.status,
-        data: responseData,
-        headers: Object.fromEntries([...response.headers.entries()].filter(h => 
-          ['content-type', 'access-control-allow-origin', 'access-control-allow-credentials'].includes(h[0].toLowerCase())
-        ))
-      });
-    } catch (error) {
-      addResult(description, false, { error: error.message });
-    }
-  };
-
-  const runAllTests = async () => {
-    setLoading(true);
-    setResults([]);
-
-    // Test if backend is accessible
-    try {
-      const response = await fetch(`${API_BASE_URL}/api/user`, {
-        method: 'GET',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-      addResult('Backend Connectivity', true, { status: response.status });
-    } catch (error) {
-      addResult('Backend Connectivity', false, { error: error.message });
-    }
-
-    // Test authentication endpoints
-    await testEndpoint('/api/user', 'Get User Info');
-    await testEndpoint('/api/token', 'Get GitHub Token');
-    
-    
-    // Test GitHub API endpoints
-    await testEndpoint('/api/github/profile', 'GitHub Profile');
-    await testEndpoint('/api/github/repositories', 'GitHub Repositories');
-
-    // Test localStorage
+  useEffect(() => {
+    // Collect debug information
     const token = localStorage.getItem('github_token');
-    addResult('LocalStorage Token', !!token, { hasToken: !!token, tokenLength: token?.length });
+    const redirectPath = localStorage.getItem('auth_redirect_path');
+    const loginTime = localStorage.getItem('login_time');
+    const loginFrom = localStorage.getItem('login_initiated_from');
+    
+    const urlParams = new URLSearchParams(window.location.search);
+    
+    setDebugInfo({
+      auth: {
+        isAuthenticated,
+        loading,
+        hasUser: !!user,
+        userInfo: user ? {
+          login: user.login,
+          name: user.name,
+          id: user.id
+        } : null
+      },
+      localStorage: {
+        hasToken: !!token,
+        tokenPreview: token ? `${token.substring(0, 10)}...` : null,
+        redirectPath,
+        loginTime,
+        loginFrom
+      },
+      environment: {
+        nodeEnv: import.meta.env.MODE,
+        apiBaseUrl: import.meta.env.VITE_API_BASE_URL || config.apiBaseUrl,
+        configApiBaseUrl: config.apiBaseUrl,
+        redirectUri: config.github.redirectUri,
+        authorizationUrl: config.github.authorizationUrl,
+        fullAuthUrl: `${import.meta.env.VITE_API_BASE_URL || config.apiBaseUrl}${config.github.authorizationUrl}`
+      },
+      location: {
+        href: window.location.href,
+        pathname: window.location.pathname,
+        search: window.location.search,
+        hasCode: urlParams.has('code'),
+        hasState: urlParams.has('state'),
+        hasError: urlParams.has('error')
+      },
+      timestamp: new Date().toISOString()
+    });
+  }, [isAuthenticated, user, loading]);
 
-    setLoading(false);
+  const handleForceCheckAuth = () => {
+    checkAuth();
   };
 
-  const clearResults = () => {
-    setResults([]);
-  };
-
-  const clearToken = () => {
+  const handleClearStorage = () => {
     localStorage.removeItem('github_token');
-    addResult('Clear Token', true, { message: 'Token cleared from localStorage' });
+    localStorage.removeItem('auth_redirect_path');
+    localStorage.removeItem('login_time');
+    localStorage.removeItem('login_initiated_from');
+    window.location.reload();
   };
 
   return (
-    <Card className="w-full max-w-4xl mx-auto">
+    <Card className="w-full max-w-4xl mx-auto my-8">
       <CardHeader>
-        <CardTitle>OAuth2 Authentication Debug</CardTitle>
-        <CardDescription>
-          Test backend endpoints and authentication flow
-        </CardDescription>
+        <CardTitle className="flex justify-between items-center">
+          <span>Authentication Debug</span>
+          <div className="flex gap-2">
+            <button 
+              onClick={handleForceCheckAuth}
+              className="px-3 py-1 bg-blue-500 text-white text-sm rounded hover:bg-blue-600"
+            >
+              Force Check Auth
+            </button>
+            <button 
+              onClick={handleClearStorage}
+              className="px-3 py-1 bg-red-500 text-white text-sm rounded hover:bg-red-600"
+            >
+              Clear Storage
+            </button>
+          </div>
+        </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="flex gap-2">
-          <Button onClick={runAllTests} disabled={loading}>
-            {loading ? 'Running Tests...' : 'Run All Tests'}
-          </Button>
-          <Button variant="outline" onClick={clearResults}>
-            Clear Results
-          </Button>
-          <Button variant="outline" onClick={clearToken}>
-            Clear Token
-          </Button>
-        </div>
-
-        <div className="space-y-3">
-          {results.map((result, index) => (
-            <div key={index} className="border rounded-lg p-3">
-              <div className="flex items-center gap-2 mb-2">
-                <Badge variant={result.success ? "default" : "destructive"}>
-                  {result.success ? 'SUCCESS' : 'FAILED'}
-                </Badge>
-                <span className="font-medium">{result.test}</span>
-                <span className="text-sm text-muted-foreground">
-                  {new Date(result.timestamp).toLocaleTimeString()}
-                </span>
-              </div>
-              <pre className="bg-muted p-2 rounded text-sm overflow-x-auto">
-                {JSON.stringify(result.data, null, 2)}
-              </pre>
-            </div>
-          ))}
-        </div>
-
-        <div className="bg-muted p-3 rounded-lg">
-          <h4 className="font-medium mb-2">Environment Info:</h4>
-          <ul className="text-sm space-y-1">
-            <li><strong>API Base URL:</strong> {API_BASE_URL}</li>
-            <li><strong>Current URL:</strong> {window.location.href}</li>
-            <li><strong>User Agent:</strong> {navigator.userAgent}</li>
-            <li><strong>Cookies Enabled:</strong> {navigator.cookieEnabled ? 'Yes' : 'No'}</li>
-          </ul>
-        </div>
+      <CardContent>
+        <pre className="bg-gray-100 dark:bg-gray-800 p-4 rounded-md overflow-auto text-xs">
+          {JSON.stringify(debugInfo, null, 2)}
+        </pre>
       </CardContent>
     </Card>
   );

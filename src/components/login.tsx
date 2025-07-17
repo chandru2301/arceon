@@ -2,14 +2,29 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/contexts/AuthContext';
+import config from '../config';
 
 export function Login() {
   const { login } = useAuth();
 
   const handleLogin = () => {
-    // Store current URL in localStorage for reference
+    // Store current URL and time in localStorage for reference
     localStorage.setItem('login_initiated_from', window.location.href);
     localStorage.setItem('login_time', new Date().toISOString());
+    
+    // Store API base URL for debugging
+    const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || config.apiBaseUrl;
+    localStorage.setItem('login_api_base_url', apiBaseUrl);
+    
+    // Store redirect URI for debugging
+    localStorage.setItem('login_redirect_uri', config.github.redirectUri);
+    
+    console.log('🚀 Starting login process...');
+    console.log('🔗 Current URL:', window.location.href);
+    console.log('🌐 API Base URL:', apiBaseUrl);
+    console.log('🔄 Redirect URI:', config.github.redirectUri);
+    
+    // Redirect to the OAuth login page
     login();
   };
   
