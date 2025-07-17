@@ -1,13 +1,13 @@
 import { useEffect, useState } from 'react';
 import { GitBranch, Star, GitFork, Eye } from 'lucide-react';
 import { useIntersectionObserver } from '@/hooks/useIntersectionObserver';
-import { githubApi, type Repository } from '@/services/api';
+import { githubApi } from '@/services/api';
 import { useAuth } from '@/contexts/AuthContext';
 
 export function RepositoryOverview() {
   const { ref, isIntersecting } = useIntersectionObserver();
   const { isAuthenticated } = useAuth();
-  const [repositories, setRepositories] = useState<Repository[]>([]);
+  const [repositories, setRepositories] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -21,7 +21,7 @@ export function RepositoryOverview() {
     try {
       setLoading(true);
       setError(null);
-      const data = await githubApi.getRepositories();
+      const data = await githubApi.getUserRepositories();
       setRepositories(data);
     } catch (error) {
       console.error('Failed to fetch repositories:', error);

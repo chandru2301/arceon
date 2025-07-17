@@ -1,13 +1,13 @@
 import { useEffect, useState } from 'react';
 import { GitPullRequest, GitMerge, Clock, CheckCircle, XCircle } from 'lucide-react';
 import { useIntersectionObserver } from '@/hooks/useIntersectionObserver';
-import { githubApi, type PullRequest } from '@/services/api';
+import { githubApi } from '@/services/api';
 import { useAuth } from '@/contexts/AuthContext';
 
 export function PullRequestsSection() {
   const { ref, isIntersecting } = useIntersectionObserver();
   const { isAuthenticated } = useAuth();
-  const [pullRequests, setPullRequests] = useState<PullRequest[]>([]);
+  const [pullRequests, setPullRequests] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -21,7 +21,7 @@ export function PullRequestsSection() {
     try {
       setLoading(true);
       setError(null);
-      const data = await githubApi.getPullRequests();
+      const data = await githubApi.getUserPullRequests();
       setPullRequests(data);
     } catch (error) {
       console.error('Failed to fetch pull requests:', error);

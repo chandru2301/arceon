@@ -1,13 +1,13 @@
 import { useEffect, useState } from 'react';
 import { AlertCircle, CheckCircle, Clock, Bug, Lightbulb, HelpCircle } from 'lucide-react';
 import { useIntersectionObserver } from '@/hooks/useIntersectionObserver';
-import { githubApi, type Issue } from '@/services/api';
+import { githubApi } from '@/services/api';
 import { useAuth } from '@/contexts/AuthContext';
 
 export function IssuesNotifications() {
   const { ref, isIntersecting } = useIntersectionObserver();
   const { isAuthenticated } = useAuth();
-  const [issues, setIssues] = useState<Issue[]>([]);
+  const [issues, setIssues] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -21,7 +21,7 @@ export function IssuesNotifications() {
     try {
       setLoading(true);
       setError(null);
-      const data = await githubApi.getIssues();
+      const data = await githubApi.getUserIssues();
       setIssues(data);
     } catch (error) {
       console.error('Failed to fetch issues:', error);

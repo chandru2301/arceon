@@ -94,7 +94,7 @@ export function GitHubHeader() {
           </div>
 
           {/* Stats Section */}
-          {isAuthenticated && user && (
+          {/* {isAuthenticated && user && (
             <div className="hidden md:flex items-center space-x-6">
               <div className="flex items-center space-x-2 text-sm">
                 <GitBranch className="w-4 h-4 text-primary" />
@@ -112,7 +112,7 @@ export function GitHubHeader() {
                 <span className="text-muted-foreground">following</span>
               </div>
             </div>
-          )}
+          )} */}
 
           {/* Desktop Navigation */}
           {isAuthenticated && (

@@ -1,13 +1,13 @@
 import { useEffect, useState } from 'react';
 import { GitCommit, Calendar, User } from 'lucide-react';
 import { useIntersectionObserver } from '@/hooks/useIntersectionObserver';
-import { githubApi, type Commit } from '@/services/api';
+import { githubApi } from '@/services/api';
 import { useAuth } from '@/contexts/AuthContext';
 
 export function RecentCommits() {
   const { ref, isIntersecting } = useIntersectionObserver();
   const { isAuthenticated } = useAuth();
-  const [commits, setCommits] = useState<Commit[]>([]);
+  const [commits, setCommits] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -21,7 +21,7 @@ export function RecentCommits() {
     try {
       setLoading(true);
       setError(null);
-      const data = await githubApi.getCommits();
+      const data = await githubApi.getUserCommits();
       setCommits(data);
     } catch (error) {
       console.error('Failed to fetch commits:', error);
@@ -109,7 +109,8 @@ export function RecentCommits() {
     }
   };
 
-  const getCommitTypeIcon = (message: string) => {
+  const getCommitTypeIcon = (message: string = '') => {
+    if (!message) return { icon: '💫', color: 'text-primary' };
     if (message.startsWith('feat:')) return { icon: '✨', color: 'text-green-500' };
     if (message.startsWith('fix:')) return { icon: '🐛', color: 'text-red-500' };
     if (message.startsWith('docs:')) return { icon: '📝', color: 'text-blue-500' };
@@ -119,17 +120,23 @@ export function RecentCommits() {
     return { icon: '💫', color: 'text-primary' };
   };
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffTime = Math.abs(now.getTime() - date.getTime());
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  const formatDate = (dateString: string = '') => {
+    if (!dateString) return 'Unknown date';
     
-    if (diffDays === 1) return '1 day ago';
-    if (diffDays < 7) return `${diffDays} days ago`;
-    if (diffDays < 30) return `${Math.ceil(diffDays / 7)} weeks ago`;
-    if (diffDays < 365) return `${Math.ceil(diffDays / 30)} months ago`;
-    return `${Math.ceil(diffDays / 365)} years ago`;
+    try {
+      const date = new Date(dateString);
+      const now = new Date();
+      const diffTime = Math.abs(now.getTime() - date.getTime());
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      
+      if (diffDays === 1) return '1 day ago';
+      if (diffDays < 7) return `${diffDays} days ago`;
+      if (diffDays < 30) return `${Math.ceil(diffDays / 7)} weeks ago`;
+      if (diffDays < 365) return `${Math.ceil(diffDays / 30)} months ago`;
+      return `${Math.ceil(diffDays / 365)} years ago`;
+    } catch (error) {
+      return 'Invalid date';
+    }
   };
 
   if (!isAuthenticated) {
@@ -181,10 +188,22 @@ export function RecentCommits() {
         <div className={`glass-card p-6 rounded-lg ${isIntersecting ? 'scroll-float' : ''}`}>
           <div className="space-y-4">
             {commits.map((commit, index) => {
-              const typeInfo = getCommitTypeIcon(commit.commit.message);
+              // Add null checks to handle malformed commit objects
+              if (!commit) return null;
+              
+              const commitData = commit.commit || {};
+              const message = commitData.message || 'No commit message';
+              const typeInfo = getCommitTypeIcon(message);
+              
+              const authorData = commitData.author || {};
+              const commitDate = authorData.date || '';
+              
+              const authorInfo = commit.author || {};
+              const authorName = authorInfo.login || authorData.name || 'Unknown';
+              
               return (
                 <div
-                  key={commit.sha}
+                  key={commit.sha || index}
                   className={`flex items-start space-x-4 p-4 rounded-lg hover:bg-muted/50 transition-colors duration-200 ${
                     isIntersecting ? 'scroll-reveal' : ''
                   }`}
@@ -200,31 +219,33 @@ export function RecentCommits() {
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         <p className="font-medium text-sm leading-5 mb-1">
-                          {commit.commit.message}
+                          {message}
                         </p>
                         <div className="flex items-center space-x-3 text-xs text-muted-foreground">
                           <div className="flex items-center space-x-1">
                             <User className="w-3 h-3" />
-                            <span>{commit.author?.login || commit.commit.author.name}</span>
+                            <span>{authorName}</span>
                           </div>
                           <div className="flex items-center space-x-1">
                             <Calendar className="w-3 h-3" />
-                            <span>{formatDate(commit.commit.author.date)}</span>
+                            <span>{formatDate(commitDate)}</span>
                           </div>
                           <div className="flex items-center space-x-1">
                             <GitCommit className="w-3 h-3" />
-                            <span className="font-mono">{commit.sha.substring(0, 7)}</span>
+                            <span className="font-mono">{(commit.sha || '').substring(0, 7)}</span>
                           </div>
                         </div>
                       </div>
-                      <a
-                        href={commit.html_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-primary hover:underline text-xs ml-4"
-                      >
-                        View
-                      </a>
+                      {commit.html_url && (
+                        <a
+                          href={commit.html_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-primary hover:underline text-xs ml-4"
+                        >
+                          View
+                        </a>
+                      )}
                     </div>
                   </div>
                 </div>
