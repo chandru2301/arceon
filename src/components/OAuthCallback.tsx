@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/contexts/AuthContext';
+import config from '../config';
 
 export const OAuthCallback: React.FC = () => {
   const { checkAuth } = useAuth();
@@ -52,11 +53,11 @@ export const OAuthCallback: React.FC = () => {
         console.log('🔄 Exchanging code for token...');
         setMessage('Authenticating with GitHub...');
 
-        const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8081';
+        const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || config.apiBaseUrl;
         
         try {
           // Call backend to handle code and get token
-          const response = await fetch(`${API_BASE_URL}/api/auth/callback?code=${code}`, {
+          const response = await fetch(`${API_BASE_URL}/api/token?code=${code}`, {
             method: 'GET',
             credentials: 'include',
             headers: {

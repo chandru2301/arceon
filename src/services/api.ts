@@ -1,4 +1,5 @@
 import axios from 'axios';
+import config from '../config';
 
 export interface GitHubUser {
   login: string;
@@ -10,7 +11,7 @@ export interface GitHubUser {
   [key: string]: any;
 }
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8081';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || config.apiBaseUrl;
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -58,7 +59,7 @@ export const authApi = {
   handleOAuthCallback: async (code: string) => {
     try {
       console.log('🔄 API: Exchanging OAuth code for token...');
-      const response = await api.get(`/api/auth/callback?code=${code}`);
+      const response = await api.get(`/api/token?code=${code}`);
       
       if (response.data?.token) {
         localStorage.setItem('github_token', response.data.token);

@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { authApi } from '@/services/api';
 import type { GitHubUser } from '@/services/api';
+import config from '../config';
 
 interface AuthContextType {
   isAuthenticated: boolean;
@@ -99,22 +100,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
       
       // After OAuth2 redirect with code, exchange it for a token
-      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8081';
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || config.apiBaseUrl;
       console.log('🌐 API Base URL:', API_BASE_URL);
       
       try {
         console.log('🔑 Step 1: Attempting to get GitHub token...');
         // First, get the GitHub token
-        const tokenResponse = await fetch(`${API_BASE_URL}/api/token`, {
+        const tokenResponse = await fetch(`${API_BASE_URL}/api/token?code=${code}`, {
           method: 'GET',
           credentials: 'include',
           headers: {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
-          },
-          // Pass the code as a query param if backend needs it
-          // In most Spring setups, the OAuth filter will handle the code automatically
-          // so this URL might not need the code parameter
+          }
         });
 
         console.log('📡 Token response status:', tokenResponse.status);
@@ -214,16 +212,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const login = (redirectPath = '/dashboard') => {
     // Redirect to Spring Boot OAuth2 endpoint with redirect parameter
-    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8081';
+    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || config.apiBaseUrl;
     
-    // Create a full URL for the redirect_uri
-    const redirectUri = `${window.location.origin}/oauth/callback`;
+    // Use the redirect URI from config
+    const redirectUri = config.github.redirectUri;
     
     // Add state parameter to track the redirect URL
     const state = encodeURIComponent(JSON.stringify({ redirect: redirectPath }));
     
     // Build the full OAuth URL with redirect_uri parameter
-    const loginUrl = `${API_BASE_URL}/oauth2/authorization/github?redirect_uri=${encodeURIComponent(redirectUri)}&state=${state}`;
+    const loginUrl = `${API_BASE_URL}${config.github.authorizationUrl}?redirect_uri=${encodeURIComponent(redirectUri)}&state=${state}`;
     
     console.log("🚀 Starting GitHub OAuth flow...");
     console.log("🔗 Login URL:", loginUrl);
