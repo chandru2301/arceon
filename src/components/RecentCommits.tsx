@@ -1,75 +1,147 @@
-import { GitCommit, Calendar, User, GitBranch } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { GitCommit, Calendar, User } from 'lucide-react';
 import { useIntersectionObserver } from '@/hooks/useIntersectionObserver';
+import { githubApi, type Commit } from '@/services/api';
+import { useAuth } from '@/contexts/AuthContext';
 
 export function RecentCommits() {
   const { ref, isIntersecting } = useIntersectionObserver();
+  const { isAuthenticated } = useAuth();
+  const [commits, setCommits] = useState<Commit[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const commits = [
-    {
-      id: 'a1b2c3d',
-      message: 'feat: add glassmorphism styling to dashboard components',
-      author: 'John Developer',
-      avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop&crop=face',
-      timestamp: '2 hours ago',
-      repository: 'react-dashboard',
-      branch: 'main',
-      additions: 45,
-      deletions: 12
-    },
-    {
-      id: 'e4f5g6h',
-      message: 'fix: resolve authentication token validation issue',
-      author: 'Sarah Developer',
-      avatar: 'https://images.unsplash.com/photo-1494790108755-2616b9c7ad2e?w=40&h=40&fit=crop&crop=face',
-      timestamp: '4 hours ago',
-      repository: 'api-gateway',
-      branch: 'bugfix/auth-token',
-      additions: 23,
-      deletions: 8
-    },
-    {
-      id: 'i7j8k9l',
-      message: 'docs: update README with installation instructions',
-      author: 'Mike Coder',
-      avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=40&h=40&fit=crop&crop=face',
-      timestamp: '1 day ago',
-      repository: 'github-analytics',
-      branch: 'docs/readme-update',
-      additions: 67,
-      deletions: 3
-    },
-    {
-      id: 'm0n1o2p',
-      message: 'refactor: optimize database queries for better performance',
-      author: 'Emma Wilson',
-      avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=40&h=40&fit=crop&crop=face',
-      timestamp: '2 days ago',
-      repository: 'mobile-app',
-      branch: 'performance/db-optimization',
-      additions: 156,
-      deletions: 89
-    },
-    {
-      id: 'q3r4s5t',
-      message: 'test: add unit tests for user authentication module',
-      author: 'Test Master',
-      avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=40&h=40&fit=crop&crop=face',
-      timestamp: '3 days ago',
-      repository: 'api-gateway',
-      branch: 'test/auth-module',
-      additions: 234,
-      deletions: 15
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchCommits();
     }
-  ];
+  }, [isAuthenticated]);
 
-  const getCommitTypeColor = (message: string) => {
-    if (message.startsWith('feat:')) return 'text-primary';
-    if (message.startsWith('fix:')) return 'text-red-500';
-    if (message.startsWith('docs:')) return 'text-blue-500';
-    if (message.startsWith('refactor:')) return 'text-purple-500';
-    if (message.startsWith('test:')) return 'text-orange-500';
-    return 'text-foreground';
+  const fetchCommits = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const data = await githubApi.getCommits();
+      setCommits(data);
+    } catch (error) {
+      console.error('Failed to fetch commits:', error);
+      setError('Failed to load commits');
+      // Fallback to mock data for demonstration
+      setCommits([
+        {
+          sha: 'abc123',
+          commit: {
+            message: 'feat: Add dark mode toggle to settings panel',
+            author: {
+              name: 'John Developer',
+              date: '2024-01-15T10:30:00Z'
+            }
+          },
+          author: {
+            login: 'johndeveloper',
+            avatar_url: 'https://github.com/github.png'
+          },
+          html_url: 'https://github.com/user/repo/commit/abc123'
+        },
+        {
+          sha: 'def456',
+          commit: {
+            message: 'fix: Resolve authentication middleware bug in API gateway',
+            author: {
+              name: 'Sara Developer',
+              date: '2024-01-14T15:45:00Z'
+            }
+          },
+          author: {
+            login: 'saradev',
+            avatar_url: 'https://github.com/github.png'
+          },
+          html_url: 'https://github.com/user/repo/commit/def456'
+        },
+        {
+          sha: 'ghi789',
+          commit: {
+            message: 'chore: Update dependencies to latest versions',
+            author: {
+              name: 'Mike Coder',
+              date: '2024-01-12T08:20:00Z'
+            }
+          },
+          author: {
+            login: 'mikecoder',
+            avatar_url: 'https://github.com/github.png'
+          },
+          html_url: 'https://github.com/user/repo/commit/ghi789'
+        },
+        {
+          sha: 'jkl012',
+          commit: {
+            message: 'docs: Add comprehensive API documentation',
+            author: {
+              name: 'Test Master',
+              date: '2024-01-10T12:15:00Z'
+            }
+          },
+          author: {
+            login: 'testmaster',
+            avatar_url: 'https://github.com/github.png'
+          },
+          html_url: 'https://github.com/user/repo/commit/jkl012'
+        },
+        {
+          sha: 'mno345',
+          commit: {
+            message: 'refactor: Improve code structure and performance',
+            author: {
+              name: 'Code Reviewer',
+              date: '2024-01-09T16:00:00Z'
+            }
+          },
+          author: {
+            login: 'reviewer',
+            avatar_url: 'https://github.com/github.png'
+          },
+          html_url: 'https://github.com/user/repo/commit/mno345'
+        }
+      ]);
+    } finally {
+      setLoading(false);
+    }
   };
+
+  const getCommitTypeIcon = (message: string) => {
+    if (message.startsWith('feat:')) return { icon: '✨', color: 'text-green-500' };
+    if (message.startsWith('fix:')) return { icon: '🐛', color: 'text-red-500' };
+    if (message.startsWith('docs:')) return { icon: '📝', color: 'text-blue-500' };
+    if (message.startsWith('chore:')) return { icon: '⚙️', color: 'text-gray-500' };
+    if (message.startsWith('refactor:')) return { icon: '♻️', color: 'text-purple-500' };
+    if (message.startsWith('test:')) return { icon: '🧪', color: 'text-yellow-500' };
+    return { icon: '💫', color: 'text-primary' };
+  };
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffTime = Math.abs(now.getTime() - date.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (diffDays === 1) return '1 day ago';
+    if (diffDays < 7) return `${diffDays} days ago`;
+    if (diffDays < 30) return `${Math.ceil(diffDays / 7)} weeks ago`;
+    if (diffDays < 365) return `${Math.ceil(diffDays / 30)} months ago`;
+    return `${Math.ceil(diffDays / 365)} years ago`;
+  };
+
+  if (!isAuthenticated) {
+    return (
+      <section className="container mx-auto px-4 py-8">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold mb-4">Recent Commits</h2>
+          <p className="text-muted-foreground">Please log in to view your recent commits</p>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section 
@@ -80,77 +152,87 @@ export function RecentCommits() {
         <h2 className="text-2xl font-bold mb-6">Recent Commits</h2>
       </div>
       
-      <div className="glass-card p-6 rounded-lg">
-        <div className="space-y-4">
-          {commits.map((commit, index) => (
-            <div
-              key={commit.id}
-              className={`flex items-center space-x-4 p-4 rounded-lg border border-border/50 hover:bg-accent/50 transition-colors duration-200 ${
-                isIntersecting ? 'scroll-reveal' : ''
-              }`}
-              style={{ animationDelay: `${(index + 2) * 0.1}s` }}
-            >
-              <div className="flex-shrink-0">
-                <img
-                  src={commit.avatar}
-                  alt={commit.author}
-                  className="w-10 h-10 rounded-full ring-2 ring-border"
-                />
-              </div>
-              
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center space-x-2 mb-1">
-                  <GitCommit className="w-4 h-4 text-muted-foreground" />
-                  <span className="text-sm font-mono text-muted-foreground">
-                    {commit.id}
-                  </span>
-                  <div className="flex items-center space-x-1">
-                    <GitBranch className="w-3 h-3 text-muted-foreground" />
-                    <span className="text-xs text-muted-foreground">
-                      {commit.branch}
-                    </span>
-                  </div>
+      {loading ? (
+        <div className="glass-card p-6 rounded-lg">
+          <div className="space-y-4">
+            {[1, 2, 3, 4, 5].map((i) => (
+              <div key={i} className="flex items-start space-x-4 animate-pulse">
+                <div className="w-8 h-8 bg-muted rounded-full"></div>
+                <div className="flex-1">
+                  <div className="h-4 bg-muted rounded w-3/4 mb-2"></div>
+                  <div className="h-3 bg-muted rounded w-1/2"></div>
                 </div>
-                
-                <p className={`font-medium ${getCommitTypeColor(commit.message)}`}>
-                  {commit.message}
-                </p>
-                
-                <div className="flex items-center space-x-4 mt-2 text-sm text-muted-foreground">
-                  <div className="flex items-center space-x-1">
-                    <User className="w-3 h-3" />
-                    <span>{commit.author}</span>
-                  </div>
-                  <div className="flex items-center space-x-1">
-                    <Calendar className="w-3 h-3" />
-                    <span>{commit.timestamp}</span>
-                  </div>
-                  <span className="text-primary font-medium">
-                    {commit.repository}
-                  </span>
-                </div>
+                <div className="h-3 bg-muted rounded w-20"></div>
               </div>
-              
-              <div className="flex-shrink-0 text-sm">
-                <div className="flex flex-col items-end space-y-1">
-                  <div className="flex items-center space-x-2">
-                    <span className="text-green-500">+{commit.additions}</span>
-                    <span className="text-red-500">-{commit.deletions}</span>
-                  </div>
-                  <div className="w-16 h-2 bg-muted rounded-full overflow-hidden">
-                    <div 
-                      className="h-full bg-green-500"
-                      style={{ 
-                        width: `${(commit.additions / (commit.additions + commit.deletions)) * 100}%` 
-                      }}
-                    ></div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
-      </div>
+      ) : error ? (
+        <div className="text-center py-8">
+          <p className="text-red-500 mb-4">{error}</p>
+          <button
+            onClick={fetchCommits}
+            className="px-4 py-2 bg-primary text-primary-foreground rounded hover:bg-primary/90"
+          >
+            Try Again
+          </button>
+        </div>
+      ) : (
+        <div className={`glass-card p-6 rounded-lg ${isIntersecting ? 'scroll-float' : ''}`}>
+          <div className="space-y-4">
+            {commits.map((commit, index) => {
+              const typeInfo = getCommitTypeIcon(commit.commit.message);
+              return (
+                <div
+                  key={commit.sha}
+                  className={`flex items-start space-x-4 p-4 rounded-lg hover:bg-muted/50 transition-colors duration-200 ${
+                    isIntersecting ? 'scroll-reveal' : ''
+                  }`}
+                  style={{ animationDelay: `${(index + 2) * 0.1}s` }}
+                >
+                  <div className="flex-shrink-0">
+                    <div className="w-8 h-8 bg-muted rounded-full flex items-center justify-center">
+                      <span className="text-sm">{typeInfo.icon}</span>
+                    </div>
+                  </div>
+                  
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <p className="font-medium text-sm leading-5 mb-1">
+                          {commit.commit.message}
+                        </p>
+                        <div className="flex items-center space-x-3 text-xs text-muted-foreground">
+                          <div className="flex items-center space-x-1">
+                            <User className="w-3 h-3" />
+                            <span>{commit.author?.login || commit.commit.author.name}</span>
+                          </div>
+                          <div className="flex items-center space-x-1">
+                            <Calendar className="w-3 h-3" />
+                            <span>{formatDate(commit.commit.author.date)}</span>
+                          </div>
+                          <div className="flex items-center space-x-1">
+                            <GitCommit className="w-3 h-3" />
+                            <span className="font-mono">{commit.sha.substring(0, 7)}</span>
+                          </div>
+                        </div>
+                      </div>
+                      <a
+                        href={commit.html_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-primary hover:underline text-xs ml-4"
+                      >
+                        View
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
     </section>
   );
 }
