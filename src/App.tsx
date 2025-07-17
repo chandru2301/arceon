@@ -23,6 +23,7 @@ import { Login } from "./components/login";
 import { DashboardRedirect } from "./components/DashboardRedirect";
 import { OAuthCallback } from "./components/OAuthCallback";
 import { AuthDebug } from "./components/AuthDebug";
+import { BackendConfigTest } from "./components/BackendConfigTest";
 
 const queryClient = new QueryClient();
 
@@ -105,6 +106,19 @@ const AppRoutes: React.FC = () => {
     return <Index />;
   };
 
+  // Auth Debug Route Component
+  const AuthDebugRoute: React.FC = () => {
+    return (
+      <div className="min-h-screen bg-background p-8">
+        <div className="max-w-6xl mx-auto space-y-8">
+          <h1 className="text-3xl font-bold text-center mb-8">Authentication Debug</h1>
+          <AuthDebug />
+          <BackendConfigTest />
+        </div>
+      </div>
+    );
+  };
+
   return (
     <Routes>
       <Route path="/" element={<Navigate to="/dashboard" replace />} />
@@ -122,7 +136,7 @@ const AppRoutes: React.FC = () => {
       />
       <Route 
         path="/auth-debug" 
-        element={<AuthDebug />} 
+        element={<AuthDebugRoute />} 
       />
       <Route 
         path="/oauth/callback" 
