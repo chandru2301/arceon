@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/contexts/AuthContext';
+import { authApi } from '@/services/api';
+import config from '../config';
 
 export const DashboardRedirect: React.FC = () => {
   const { checkAuth } = useAuth();
@@ -17,18 +19,61 @@ export const DashboardRedirect: React.FC = () => {
         
         console.log('🔑 GitHub OAuth code present:', !!code);
         console.log('🔗 GitHub OAuth state present:', !!state);
+        console.log('🌐 API Base URL:', import.meta.env.VITE_API_BASE_URL || config.apiBaseUrl);
         
         if (code) {
           setMessage('GitHub code detected! Authenticating...');
           
-          // Call checkAuth to handle the OAuth code
-          await checkAuth();
-          
-          // If still on this page after checkAuth, redirect to dashboard
-          setMessage('Authentication successful! Redirecting to dashboard...');
-          setTimeout(() => {
-            window.location.href = '/dashboard';
-          }, 1500);
+          try {
+            // Use the authApi service to handle OAuth callback
+            const result = await authApi.handleOAuthCallback(code);
+            
+            if (result.success && result.token) {
+              console.log('✅ Token exchange successful');
+              
+              // Now call checkAuth to complete login
+              await checkAuth();
+              
+              // Clean up URL parameters
+              const cleanUrl = window.location.pathname;
+              window.history.replaceState({}, document.title, cleanUrl);
+              
+              // Redirect after a short delay
+              setMessage('Authentication successful! Redirecting to dashboard...');
+              setTimeout(() => {
+                // Check for redirect in state
+                let redirectTo = '/dashboard';
+                if (state) {
+                  try {
+                    const stateData = JSON.parse(decodeURIComponent(state));
+                    if (stateData?.redirect) {
+                      redirectTo = stateData.redirect;
+                    }
+                  } catch (e) {
+                    console.error('Failed to parse state parameter:', e);
+                  }
+                }
+                
+                // Also check localStorage for redirect path
+                const storedRedirect = localStorage.getItem('auth_redirect_path');
+                if (storedRedirect) {
+                  redirectTo = storedRedirect;
+                  localStorage.removeItem('auth_redirect_path');
+                }
+                
+                console.log('🚀 Redirecting to:', redirectTo);
+                window.location.href = redirectTo;
+              }, 1500);
+            } else {
+              throw new Error(result.error || 'No token received from server');
+            }
+          } catch (error) {
+            console.error('💥 API call error:', error);
+            setMessage(`Authentication failed: ${error.message}. Redirecting to login...`);
+            setTimeout(() => {
+              window.location.href = '/login';
+            }, 3000);
+          }
         } else {
           setMessage('No authentication code found. Redirecting to login...');
           setTimeout(() => {

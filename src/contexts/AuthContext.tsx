@@ -53,52 +53,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         
         if (code) {
           console.log('✅ OAuth code detected, handling callback...');
-          // We have a code from OAuth2, handle the callback
-          const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || config.apiBaseUrl;
-          
           try {
-            // Get token using the code
-            const tokenResponse = await fetch(`${API_BASE_URL}/api/token?code=${code}`, {
-              method: 'GET',
-              credentials: 'include',
-              headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-              }
-            });
+            // Use the authApi to handle the OAuth callback
+            const result = await authApi.handleOAuthCallback(code);
             
-            if (tokenResponse.ok) {
-              const tokenData = await tokenResponse.json();
+            if (result.success && result.token) {
+              console.log('✅ Successfully obtained token');
+              // Token is already saved in localStorage by the API service
               
-              if (tokenData.token) {
-                // Store the token
-                localStorage.setItem('github_token', tokenData.token);
-                
-                // Get user info
-                const userResponse = await fetch(`${API_BASE_URL}/api/user`, {
-                  method: 'GET',
-                  credentials: 'include',
-                  headers: {
-                    'Authorization': `Bearer ${tokenData.token}`,
-                    'Content-Type': 'application/json',
-                  },
-                });
-                
-                if (userResponse.ok) {
-                  const userData = await userResponse.json();
-                  setIsAuthenticated(true);
-                  setUser(userData);
-                } else {
-                  throw new Error('Failed to get user info');
-                }
-              } else {
-                throw new Error('No token in response');
-              }
+              // Get user info
+              const authResult = await authApi.checkAuth();
+              setIsAuthenticated(authResult.isAuthenticated);
+              setUser(authResult.user);
+              
+              // Clean up URL parameters
+              const cleanUrl = window.location.pathname;
+              window.history.replaceState({}, document.title, cleanUrl);
             } else {
-              throw new Error('Failed to get token');
+              console.error('❌ Failed to obtain token:', result.error);
+              throw new Error(result.error || 'Failed to obtain token');
             }
           } catch (error) {
-            console.error('Error handling OAuth code:', error);
+            console.error('💥 Error handling OAuth code:', error);
             setIsAuthenticated(false);
             setUser(null);
           }
@@ -125,6 +101,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Redirect to Spring Boot OAuth2 endpoint with redirect parameter
     const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || config.apiBaseUrl;
     
+    // Store the redirect path in localStorage
+    localStorage.setItem('auth_redirect_path', redirectPath);
+    
     // Use the redirect URI from config
     const redirectUri = config.github.redirectUri;
     
@@ -147,6 +126,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       // Remove token from localStorage
       localStorage.removeItem('github_token');
+      localStorage.removeItem('auth_redirect_path');
       
       // Call backend logout endpoint
       await authApi.logout();
@@ -160,6 +140,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       console.error('Logout failed:', error);
       // Even if backend logout fails, clear local state
       localStorage.removeItem('github_token');
+      localStorage.removeItem('auth_redirect_path');
       setIsAuthenticated(false);
       setUser(null);
       window.location.href = '/login';

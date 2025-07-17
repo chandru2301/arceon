@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/contexts/AuthContext';
+import { authApi } from '@/services/api';
 import config from '../config';
 
 export const OAuthCallback: React.FC = () => {
@@ -27,13 +28,15 @@ export const OAuthCallback: React.FC = () => {
           error,
           errorDescription,
           hasLocalStorageToken: !!localStorage.getItem('github_token'),
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
+          apiBaseUrl: import.meta.env.VITE_API_BASE_URL || config.apiBaseUrl
         });
 
         console.log('🔍 OAuth Callback Component - Processing callback...');
         console.log('📍 Current URL:', window.location.href);
         console.log('🔑 Code present:', !!code);
         console.log('🔗 State present:', !!state);
+        console.log('🌐 API Base URL:', import.meta.env.VITE_API_BASE_URL || config.apiBaseUrl);
 
         if (error) {
           console.error('❌ OAuth error:', error, errorDescription);
@@ -49,60 +52,50 @@ export const OAuthCallback: React.FC = () => {
           return;
         }
 
-        // Call the API directly to get token
+        // Call the API to get token
         console.log('🔄 Exchanging code for token...');
         setMessage('Authenticating with GitHub...');
-
-        const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || config.apiBaseUrl;
         
         try {
-          // Call backend to handle code and get token
-          const response = await fetch(`${API_BASE_URL}/api/token?code=${code}`, {
-            method: 'GET',
-            credentials: 'include',
-            headers: {
-              'Accept': 'application/json',
-              'Content-Type': 'application/json'
-            }
-          });
-
-          if (response.ok) {
-            const data = await response.json();
+          // Use the authApi service to handle OAuth callback
+          const result = await authApi.handleOAuthCallback(code);
+          
+          if (result.success && result.token) {
             console.log('✅ Token exchange successful');
             
-            if (data.token) {
-              localStorage.setItem('github_token', data.token);
-              console.log('✅ Token saved to localStorage');
-              
-              // Now call checkAuth to complete login
-              await checkAuth();
-              
-              setStatus('success');
-              setMessage('Successfully authenticated with GitHub!');
-              
-              // Redirect after a short delay
-              setTimeout(() => {
-                // Check for redirect in state
-                let redirectTo = '/dashboard';
-                if (state) {
-                  try {
-                    const stateData = JSON.parse(decodeURIComponent(state));
-                    if (stateData?.redirect) {
-                      redirectTo = stateData.redirect;
-                    }
-                  } catch (e) {
-                    console.error('Failed to parse state parameter:', e);
+            // Now call checkAuth to complete login
+            await checkAuth();
+            
+            setStatus('success');
+            setMessage('Successfully authenticated with GitHub!');
+            
+            // Redirect after a short delay
+            setTimeout(() => {
+              // Check for redirect in state
+              let redirectTo = '/dashboard';
+              if (state) {
+                try {
+                  const stateData = JSON.parse(decodeURIComponent(state));
+                  if (stateData?.redirect) {
+                    redirectTo = stateData.redirect;
                   }
+                } catch (e) {
+                  console.error('Failed to parse state parameter:', e);
                 }
-                
-                window.location.href = redirectTo;
-              }, 1000);
-            } else {
-              throw new Error('No token received from server');
-            }
+              }
+              
+              // Also check localStorage for redirect path
+              const storedRedirect = localStorage.getItem('auth_redirect_path');
+              if (storedRedirect) {
+                redirectTo = storedRedirect;
+                localStorage.removeItem('auth_redirect_path');
+              }
+              
+              console.log('🚀 Redirecting to:', redirectTo);
+              window.location.href = redirectTo;
+            }, 1000);
           } else {
-            const errorText = await response.text();
-            throw new Error(`Server responded with status ${response.status}: ${errorText}`);
+            throw new Error(result.error || 'No token received from server');
           }
         } catch (error) {
           console.error('💥 API call error:', error);
