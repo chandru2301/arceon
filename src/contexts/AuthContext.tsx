@@ -54,7 +54,54 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (code) {
           console.log('✅ OAuth code detected, handling callback...');
           // We have a code from OAuth2, handle the callback
-          await handleOAuthCallback();
+          const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || config.apiBaseUrl;
+          
+          try {
+            // Get token using the code
+            const tokenResponse = await fetch(`${API_BASE_URL}/api/token?code=${code}`, {
+              method: 'GET',
+              credentials: 'include',
+              headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+              }
+            });
+            
+            if (tokenResponse.ok) {
+              const tokenData = await tokenResponse.json();
+              
+              if (tokenData.token) {
+                // Store the token
+                localStorage.setItem('github_token', tokenData.token);
+                
+                // Get user info
+                const userResponse = await fetch(`${API_BASE_URL}/api/user`, {
+                  method: 'GET',
+                  credentials: 'include',
+                  headers: {
+                    'Authorization': `Bearer ${tokenData.token}`,
+                    'Content-Type': 'application/json',
+                  },
+                });
+                
+                if (userResponse.ok) {
+                  const userData = await userResponse.json();
+                  setIsAuthenticated(true);
+                  setUser(userData);
+                } else {
+                  throw new Error('Failed to get user info');
+                }
+              } else {
+                throw new Error('No token in response');
+              }
+            } else {
+              throw new Error('Failed to get token');
+            }
+          } catch (error) {
+            console.error('Error handling OAuth code:', error);
+            setIsAuthenticated(false);
+            setUser(null);
+          }
         } else {
           console.log('❌ No token and no OAuth code, user not authenticated');
           // No token and no code, user is not authenticated
@@ -71,142 +118,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } finally {
       console.log('🏁 Auth check completed');
       setLoading(false);
-    }
-  };
-
-  const handleOAuthCallback = async () => {
-    try {
-      console.log('🔍 Starting OAuth callback handling...');
-      console.log('📍 Current URL:', window.location.href);
-      console.log('🔍 URL parameters:', new URLSearchParams(window.location.search));
-      
-      // Get code and state from URL parameters
-      const urlParams = new URLSearchParams(window.location.search);
-      const code = urlParams.get('code');
-      const state = urlParams.get('state');
-      
-      // Extract redirect path from state if available
-      let redirectPath = '/dashboard';
-      if (state) {
-        try {
-          const stateData = JSON.parse(decodeURIComponent(state));
-          if (stateData?.redirect) {
-            redirectPath = stateData.redirect;
-            console.log('📍 Found redirect path in state:', redirectPath);
-          }
-        } catch (e) {
-          console.error('Failed to parse state parameter:', e);
-        }
-      }
-      
-      // After OAuth2 redirect with code, exchange it for a token
-      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || config.apiBaseUrl;
-      console.log('🌐 API Base URL:', API_BASE_URL);
-      
-      try {
-        console.log('🔑 Step 1: Attempting to get GitHub token...');
-        // First, get the GitHub token
-        const tokenResponse = await fetch(`${API_BASE_URL}/api/token?code=${code}`, {
-          method: 'GET',
-          credentials: 'include',
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-          }
-        });
-
-        console.log('📡 Token response status:', tokenResponse.status);
-        console.log('📡 Token response headers:', Object.fromEntries(tokenResponse.headers.entries()));
-
-        if (tokenResponse.ok) {
-          const tokenData = await tokenResponse.json();
-          console.log('✅ Token response data:', tokenData);
-          
-          if (tokenData.token) {
-            // Store the token for direct GitHub API calls
-            localStorage.setItem('github_token', tokenData.token);
-            console.log('💾 Token stored successfully in localStorage');
-            
-            console.log('👤 Step 2: Getting user info...');
-            // Now get user info
-            const userResponse = await fetch(`${API_BASE_URL}/api/user`, {
-              method: 'GET',
-              credentials: 'include',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-            });
-
-            console.log('📡 User response status:', userResponse.status);
-            console.log('📡 User response headers:', Object.fromEntries(userResponse.headers.entries()));
-
-            if (userResponse.ok) {
-              const userData = await userResponse.json();
-              console.log('✅ User data received:', userData);
-              
-              // Set authentication state
-              setIsAuthenticated(true);
-              setUser(userData);
-              
-              console.log('🎉 OAuth2 login successful!');
-              
-              // Clean up the URL and use the redirect path from state
-              window.history.replaceState({}, document.title, window.location.pathname);
-              console.log('🧹 URL cleaned up, redirect target:', redirectPath);
-              
-              // Redirect to dashboard or intended path
-              console.log('🚀 Redirecting to:', redirectPath);
-              window.location.href = redirectPath;
-            } else {
-              const errorText = await userResponse.text();
-              console.error('❌ Failed to get user info:', userResponse.status, errorText);
-              throw new Error(`Failed to get user info: ${userResponse.status} ${errorText}`);
-            }
-          } else {
-            console.error('❌ Token missing in response:', tokenData);
-            throw new Error('Token missing in response');
-          }
-        } else {
-          const errorText = await tokenResponse.text();
-          console.error('❌ Failed to get token:', tokenResponse.status, errorText);
-          throw new Error(`Failed to get token: ${tokenResponse.status} ${errorText}`);
-        }
-      } catch (error) {
-        console.error('⚠️ OAuth callback error:', error);
-        console.log('🔄 Attempting fallback to session-based auth...');
-        
-        // Fallback: just check if user is authenticated via session
-        try {
-          const result = await authApi.checkAuth();
-          console.log('🔄 Fallback auth result:', result);
-          
-          if (result.isAuthenticated && result.user) {
-            setIsAuthenticated(true);
-            setUser(result.user);
-            console.log('✅ Fallback auth successful');
-            
-            // Clean up the URL and use the redirect path from state
-            window.history.replaceState({}, document.title, window.location.pathname);
-            console.log('🧹 URL cleaned up, redirect target:', redirectPath);
-            
-            // Redirect to dashboard or intended path
-            console.log('🚀 Redirecting to:', redirectPath);
-            window.location.href = redirectPath;
-          } else {
-            console.error('❌ Fallback auth failed - user not authenticated');
-            setIsAuthenticated(false);
-            setUser(null);
-          }
-        } catch (fallbackError) {
-          console.error('❌ Fallback auth also failed:', fallbackError);
-          setIsAuthenticated(false);
-          setUser(null);
-        }
-      }
-    } catch (error) {
-      console.error('💥 OAuth callback completely failed:', error);
-      setIsAuthenticated(false);
-      setUser(null);
     }
   };
 

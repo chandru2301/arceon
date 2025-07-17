@@ -7,7 +7,7 @@ const config = {
   // GitHub OAuth settings
   github: {
     // The redirect URL after GitHub OAuth authentication
-    redirectUri: 'https://arceon.netlify.app/oauth/callback',
+    redirectUri: 'https://arceon.netlify.app/dashboard',
     // The OAuth authorization URL
     authorizationUrl: '/oauth2/authorization/github'
   }

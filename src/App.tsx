@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
+import React, { useEffect } from "react";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import MyProjectsPage from "./pages/MyProjectsPage";
@@ -20,7 +21,6 @@ import ProfilePage from "./pages/ProfilePage";
 import SettingsPage from "./pages/SettingsPage";
 import { Login } from "./components/login";
 import { DashboardRedirect } from "./components/DashboardRedirect";
-import { OAuthCallback } from "./components/OAuthCallback";
 
 const queryClient = new QueryClient();
 
@@ -72,13 +72,39 @@ const AppRoutes: React.FC = () => {
 
   // Dashboard Route Component (handles OAuth2 success callback)
   const DashboardRoute: React.FC = () => {
+    const { checkAuth } = useAuth();
     const urlParams = new URLSearchParams(window.location.search);
     const code = urlParams.get('code');
 
     // If we have a GitHub OAuth code, show the redirect component
     if (code) {
       console.log('🔄 OAuth code detected in URL, handling GitHub callback...');
-      return <DashboardRedirect />;
+      
+      // Use effect to handle the code
+      useEffect(() => {
+        const handleOAuthCode = async () => {
+          try {
+            // Call checkAuth to handle the OAuth code
+            await checkAuth();
+            
+            // Clean up the URL by removing the code parameter
+            window.history.replaceState({}, document.title, '/dashboard');
+          } catch (error) {
+            console.error('Error handling OAuth code:', error);
+          }
+        };
+        
+        handleOAuthCode();
+      }, []);
+      
+      return (
+        <div className="min-h-screen bg-background flex items-center justify-center">
+          <div className="text-center">
+            <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+            <p className="text-muted-foreground">Completing authentication...</p>
+          </div>
+        </div>
+      );
     }
 
     // Otherwise, show the protected dashboard
@@ -99,10 +125,6 @@ const AppRoutes: React.FC = () => {
             <Login />
           </PublicRoute>
         } 
-      />
-      <Route 
-        path="/oauth/callback" 
-        element={<OAuthCallback />} 
       />
       <Route 
         path="/dashboard" 
