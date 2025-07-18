@@ -24,9 +24,9 @@ const api = axios.create({
 // Add token to requests if available
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('github_token');
-    if (token) {
-      config.headers['Authorization'] = `Bearer ${token}`;
+    const jwtToken = localStorage.getItem('jwt_token');
+    if (jwtToken) {
+      config.headers['Authorization'] = `Bearer ${jwtToken}`;
     }
     return config;
   },
@@ -40,8 +40,10 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      // Clear token on authentication error
-      localStorage.removeItem('github_token');
+      // Clear tokens on authentication error
+      localStorage.removeItem('jwt_token');
+      localStorage.removeItem('github_access_token');
+      localStorage.removeItem('user_info');
       // Optionally redirect to login
       window.location.href = '/';
     }
@@ -76,9 +78,23 @@ export const authApi = {
       const response = await api.get(`/api/token?code=${code}`);
       
       if (response.data?.token) {
-        localStorage.setItem('github_token', response.data.token);
-        console.log('✅ Token saved successfully');
-        return { success: true, token: response.data.token };
+        // Store JWT token for backend authentication
+        localStorage.setItem('jwt_token', response.data.token);
+        // Store GitHub access token for GitHub API calls
+        if (response.data.github_access_token) {
+          localStorage.setItem('github_access_token', response.data.github_access_token);
+        }
+        // Store user info
+        if (response.data.user) {
+          localStorage.setItem('user_info', JSON.stringify(response.data.user));
+        }
+        console.log('✅ Tokens saved successfully');
+        return { 
+          success: true, 
+          token: response.data.token,
+          githubAccessToken: response.data.github_access_token,
+          user: response.data.user
+        };
       } else {
         console.error('❌ No token in response:', response.data);
         return { success: false, error: 'No token received from server' };
@@ -137,13 +153,17 @@ export const authApi = {
   logout: async () => {
     try {
       console.log('🔄 API: Logging out...');
-      // Clear local token
-      localStorage.removeItem('github_token');
+      // Clear all tokens and user info
+      localStorage.removeItem('jwt_token');
+      localStorage.removeItem('github_access_token');
+      localStorage.removeItem('user_info');
       return true;
     } catch (error: any) {
       console.error('💥 Logout error:', error);
-      // Still remove the token
-      localStorage.removeItem('github_token');
+      // Still remove the tokens
+      localStorage.removeItem('jwt_token');
+      localStorage.removeItem('github_access_token');
+      localStorage.removeItem('user_info');
       throw error;
     }
   }

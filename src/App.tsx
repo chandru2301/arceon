@@ -23,7 +23,7 @@ import { Login } from "./components/login";
 import { DashboardRedirect } from "./components/DashboardRedirect";
 import { OAuthCallback } from "./components/OAuthCallback";
 import { AuthDebug } from "./components/AuthDebug";
-import { BackendConfigTest } from "./components/BackendConfigTest";
+import BackendConfigTest from "./components/BackendConfigTest";
 
 const queryClient = new QueryClient();
 

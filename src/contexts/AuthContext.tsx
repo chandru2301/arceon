@@ -34,61 +34,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       console.log('🔍 URL parameters:', new URLSearchParams(window.location.search).toString());
       
       // First check if we have a token in localStorage
-      const token = localStorage.getItem('github_token');
+      const token = localStorage.getItem('jwt_token');
       console.log('🔑 Token in localStorage:', !!token);
       
       if (token) {
-        console.log('✅ Token found, verifying with GitHub API...');
+        console.log('✅ Token found, verifying with backend...');
         // If we have a token, verify it's still valid by getting user info
         const result = await authApi.checkAuth();
         console.log('🔍 Token verification result:', result);
         setIsAuthenticated(result.isAuthenticated);
         setUser(result.user);
       } else {
-        console.log('❌ No token found, checking for OAuth success...');
-        // No token, check if we just came back from OAuth2 login
-        const urlParams = new URLSearchParams(window.location.search);
-        const code = urlParams.get('code');
-        console.log('🔍 URL code parameter:', code);
-        
-        if (code) {
-          console.log('✅ OAuth code detected, handling callback...');
-          try {
-            // Use the authApi to handle the OAuth callback
-            const result = await authApi.handleOAuthCallback(code);
-            
-            if (result.success && result.token) {
-              console.log('✅ Successfully obtained token');
-              // Token is already saved in localStorage by the API service
-              
-              // Get user info
-              const authResult = await authApi.checkAuth();
-              setIsAuthenticated(authResult.isAuthenticated);
-              setUser(authResult.user);
-              
-              // Clean up URL parameters
-              const cleanUrl = window.location.pathname;
-              window.history.replaceState({}, document.title, cleanUrl);
-            } else {
-              console.error('❌ Failed to obtain token:', result.error);
-              throw new Error(result.error || 'Failed to obtain token');
-            }
-          } catch (error) {
-            console.error('💥 Error handling OAuth code:', error);
-            setIsAuthenticated(false);
-            setUser(null);
-          }
-        } else {
-          console.log('❌ No token and no OAuth code, user not authenticated');
-          // No token and no code, user is not authenticated
-          setIsAuthenticated(false);
-          setUser(null);
-        }
+        console.log('❌ No token found');
+        // No token, user is not authenticated
+        // Note: We don't handle OAuth codes here anymore since OAuthCallback component handles that
+        setIsAuthenticated(false);
+        setUser(null);
       }
     } catch (error) {
       console.error('💥 Auth check failed:', error);
-      // Clear potentially invalid token
-      localStorage.removeItem('github_token');
+      // Clear potentially invalid tokens
+      localStorage.removeItem('jwt_token');
+      localStorage.removeItem('github_access_token');
+      localStorage.removeItem('user_info');
       setIsAuthenticated(false);
       setUser(null);
     } finally {
@@ -124,8 +92,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const logout = async () => {
     try {
-      // Remove token from localStorage
-      localStorage.removeItem('github_token');
+      // Remove tokens from localStorage
+      localStorage.removeItem('jwt_token');
+      localStorage.removeItem('github_access_token');
+      localStorage.removeItem('user_info');
       localStorage.removeItem('auth_redirect_path');
       
       // Call backend logout endpoint
@@ -139,7 +109,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch (error) {
       console.error('Logout failed:', error);
       // Even if backend logout fails, clear local state
-      localStorage.removeItem('github_token');
+      localStorage.removeItem('jwt_token');
+      localStorage.removeItem('github_access_token');
+      localStorage.removeItem('user_info');
       localStorage.removeItem('auth_redirect_path');
       setIsAuthenticated(false);
       setUser(null);
@@ -148,12 +120,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   useEffect(() => {
+    // Don't check auth if we're on the OAuth callback page
+    if (window.location.pathname === '/oauth/callback') {
+      setLoading(false);
+      return;
+    }
+    
     checkAuth();
   }, []);
 
   // Check auth on page focus (when user returns to tab)
   useEffect(() => {
     const handleFocus = () => {
+      // Don't check auth if we're on the OAuth callback page
+      if (window.location.pathname === '/oauth/callback') {
+        return;
+      }
+      
       if (!loading) {
         checkAuth();
       }

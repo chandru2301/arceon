@@ -31,7 +31,7 @@ export const OAuthTest: React.FC = () => {
     
     // Test 4: Test backend connectivity
     try {
-      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8081';
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://arceon-backend.onrender.com';
       addResult(`🌐 Testing backend at: ${API_BASE_URL}`);
       
       const response = await fetch(`${API_BASE_URL}/api/user`, {

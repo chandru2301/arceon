@@ -20,6 +20,18 @@ export const OAuthCallback: React.FC = () => {
         const error = urlParams.get('error');
         const errorDescription = urlParams.get('error_description');
 
+        // Check if this code has already been processed
+        const processedCode = sessionStorage.getItem('processed_oauth_code');
+        if (processedCode === code) {
+          console.log('⚠️ OAuth code already processed, skipping...');
+          setStatus('success');
+          setMessage('Authentication already completed!');
+          setTimeout(() => {
+            window.location.href = '/dashboard';
+          }, 1000);
+          return;
+        }
+
         // Store debug info
         setDebugInfo({
           currentUrl: window.location.href,
@@ -27,7 +39,8 @@ export const OAuthCallback: React.FC = () => {
           state: state ? `${state.substring(0, 10)}...` : null,
           error,
           errorDescription,
-          hasLocalStorageToken: !!localStorage.getItem('github_token'),
+          hasJwtToken: !!localStorage.getItem('jwt_token'),
+          hasGitHubToken: !!localStorage.getItem('github_access_token'),
           timestamp: new Date().toISOString(),
           apiBaseUrl: import.meta.env.VITE_API_BASE_URL || config.apiBaseUrl
         });
@@ -52,6 +65,9 @@ export const OAuthCallback: React.FC = () => {
           return;
         }
 
+        // Mark this code as processed
+        sessionStorage.setItem('processed_oauth_code', code);
+
         // Call the API to get token
         console.log('🔄 Exchanging code for token...');
         setMessage('Authenticating with GitHub...');
@@ -71,6 +87,9 @@ export const OAuthCallback: React.FC = () => {
             
             // Redirect after a short delay
             setTimeout(() => {
+              // Clean up the processed code
+              sessionStorage.removeItem('processed_oauth_code');
+              
               // Check for redirect in state
               let redirectTo = '/dashboard';
               if (state) {
