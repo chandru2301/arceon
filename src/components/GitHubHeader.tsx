@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { 
   GitBranch, 
@@ -54,6 +54,36 @@ export function GitHubHeader() {
   const { theme, toggleTheme } = useTheme();
   const { isAuthenticated, user, login, logout } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  // Handle body overflow and viewport when mobile menu is open
+  useEffect(() => {
+    if (isMobileMenuOpen) {
+      // Prevent body scroll when drawer is open
+      document.body.style.overflow = 'hidden';
+      // Prevent viewport zooming
+      const viewport = document.querySelector('meta[name="viewport"]');
+      if (viewport) {
+        viewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no');
+      }
+    } else {
+      // Restore body scroll when drawer is closed
+      document.body.style.overflow = '';
+      // Restore viewport settings
+      const viewport = document.querySelector('meta[name="viewport"]');
+      if (viewport) {
+        viewport.setAttribute('content', 'width=device-width, initial-scale=1.0');
+      }
+    }
+
+    // Cleanup function
+    return () => {
+      document.body.style.overflow = '';
+      const viewport = document.querySelector('meta[name="viewport"]');
+      if (viewport) {
+        viewport.setAttribute('content', 'width=device-width, initial-scale=1.0');
+      }
+    };
+  }, [isMobileMenuOpen]);
 
   const handleLogin = () => {
     login();
@@ -236,7 +266,7 @@ export function GitHubHeader() {
           {/* Right Side Actions */}
           <div className="flex items-center space-x-3">
             {/* Auth Actions */}
-            {isAuthenticated ? (
+            {/* {isAuthenticated ? (
               <Button
                 variant="outline"
                 size="sm"
@@ -256,7 +286,7 @@ export function GitHubHeader() {
                 <LogIn className="w-4 h-4 mr-2" />
                 Login
               </Button>
-            )}
+            )} */}
 
             {/* Theme Toggle */}
             <Button
@@ -326,11 +356,11 @@ export function GitHubHeader() {
               <Drawer open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
                 <DrawerTrigger asChild>
                   <Button variant="glass" size="icon" className="lg:hidden">
-                    <Menu className="w-4 h-4" />
+                    <Menu className="w-10 h-10" />
                   </Button>
                 </DrawerTrigger>
-                <DrawerContent className="glass-card">
-                  <DrawerHeader className="border-b border-white/10">
+                <DrawerContent className="glass-card max-h-[90vh] border-0 fixed inset-0 z-[9999]">
+                  <DrawerHeader className="border-b border-white/10 flex-shrink-0">
                     <div className="flex items-center justify-between">
                       <DrawerTitle className="flex items-center space-x-3">
                         <img
@@ -351,94 +381,103 @@ export function GitHubHeader() {
                     </div>
                   </DrawerHeader>
                   
-                  <div className="p-4 space-y-4">
-                    {/* Mobile Navigation Items */}
-                    <div className="space-y-2">
-                      <Button variant="glass" className="w-full justify-start" asChild>
-                        <Link to="/dashboard">
-                          Dashboard
-                        </Link>
-                      </Button>
-                      
-                      <div className="space-y-1">
-                        <div className="text-sm font-medium text-muted-foreground px-3 py-1">Projects</div>
-                        <Button variant="ghost" className="w-full justify-start pl-6" asChild>
-                          <Link to="/projects/featured">
-                            <TrendingUp className="w-4 h-4 mr-3" />
-                            Trending Featured
+                  <div className="flex-1 overflow-y-auto">
+                    <div className="p-4 space-y-4">
+                      {/* Mobile Navigation Items */}
+                      <div className="space-y-2">
+                        <Button variant="glass" className="w-full justify-start" asChild>
+                          <Link to="/dashboard" onClick={() => setIsMobileMenuOpen(false)}>
+                            Dashboard
                           </Link>
                         </Button>
-                        <Button variant="ghost" className="w-full justify-start pl-6" asChild>
-                          <Link to="/projects/starred">
-                            <Star className="w-4 h-4 mr-3" />
-                            Starred Projects
-                          </Link>
-                        </Button>
-                        <Button variant="ghost" className="w-full justify-start pl-6" asChild>
-                          <Link to="/projects/my-projects">
-                            <Folder className="w-4 h-4 mr-3" />
-                            My Projects
-                          </Link>
-                        </Button>
+                        
+                        <div className="space-y-1">
+                          <div className="text-sm font-medium text-muted-foreground px-3 py-1">Projects</div>
+                          <Button variant="ghost" className="w-full justify-start pl-6" asChild>
+                            <Link to="/projects/featured" onClick={() => setIsMobileMenuOpen(false)}>
+                              <TrendingUp className="w-4 h-4 mr-3" />
+                              Trending Featured
+                            </Link>
+                          </Button>
+                          <Button variant="ghost" className="w-full justify-start pl-6" asChild>
+                            <Link to="/projects/starred" onClick={() => setIsMobileMenuOpen(false)}>
+                              <Star className="w-4 h-4 mr-3" />
+                              Starred Projects
+                            </Link>
+                          </Button>
+                          <Button variant="ghost" className="w-full justify-start pl-6" asChild>
+                            <Link to="/projects/my-projects" onClick={() => setIsMobileMenuOpen(false)}>
+                              <Folder className="w-4 h-4 mr-3" />
+                              My Projects
+                            </Link>
+                          </Button>
+                        </div>
+
+                        <div className="space-y-1">
+                          <div className="text-sm font-medium text-muted-foreground px-3 py-1">Insights</div>
+                          <Button variant="ghost" className="w-full justify-start pl-6" asChild>
+                            <Link to="/insights/contributions" onClick={() => setIsMobileMenuOpen(false)}>
+                              <BarChart3 className="w-4 h-4 mr-3" />
+                              Contribution Insights
+                            </Link>
+                          </Button>
+                          <Button variant="ghost" className="w-full justify-start pl-6" asChild>
+                            <Link to="/insights/health" onClick={() => setIsMobileMenuOpen(false)}>
+                              <Activity className="w-4 h-4 mr-3" />
+                              Repository Health
+                            </Link>
+                          </Button>
+                        </div>
+
+                        <div className="space-y-1">
+                          <div className="text-sm font-medium text-muted-foreground px-3 py-1">Activity</div>
+                          <Button variant="ghost" className="w-full justify-start pl-6" asChild>
+                            <Link to="/activity/contribution-activity" onClick={() => setIsMobileMenuOpen(false)}>
+                              <Calendar className="w-4 h-4 mr-3" />
+                              Timeline
+                            </Link>
+                          </Button>
+                          <Button variant="ghost" className="w-full justify-start pl-6" asChild>
+                            <Link to="/insights/activity" onClick={() => setIsMobileMenuOpen(false)}>
+                              <GitBranch className="w-4 h-4 mr-3" />
+                              Recent Commits
+                            </Link>
+                          </Button>
+                          <Button variant="ghost" className="w-full justify-start pl-6" asChild>
+                            <Link to="/activity/achievements" onClick={() => setIsMobileMenuOpen(false)}>
+                              <Award className="w-4 h-4 mr-3" />
+                              Achievements
+                            </Link>
+                          </Button>
+                        </div>
                       </div>
 
-                      <div className="space-y-1">
-                        <div className="text-sm font-medium text-muted-foreground px-3 py-1">Insights</div>
-                        <Button variant="ghost" className="w-full justify-start pl-6" asChild>
-                          <Link to="/insights/contributions">
-                            <BarChart3 className="w-4 h-4 mr-3" />
-                            Contribution Insights
+                      {/* Profile Actions */}
+                      <div className="border-t border-white/10 pt-4 space-y-2">
+                        <Button variant="ghost" className="w-full justify-start" asChild>
+                          <Link to="/profile" onClick={() => setIsMobileMenuOpen(false)}>
+                            <Eye className="w-4 h-4 mr-3" />
+                            View Profile
                           </Link>
                         </Button>
-                        <Button variant="ghost" className="w-full justify-start pl-6" asChild>
-                          <Link to="/insights/health">
-                            <Activity className="w-4 h-4 mr-3" />
-                            Repository Health
+                        <Button variant="ghost" className="w-full justify-start" asChild>
+                          <Link to="/settings" onClick={() => setIsMobileMenuOpen(false)}>
+                            <Settings className="w-4 h-4 mr-3" />
+                            Settings
                           </Link>
                         </Button>
-                      </div>
-
-                      <div className="space-y-1">
-                        <div className="text-sm font-medium text-muted-foreground px-3 py-1">Activity</div>
-                        <Button variant="ghost" className="w-full justify-start pl-6" asChild>
-                          <Link to="/activity/contribution-activity">
-                            <Calendar className="w-4 h-4 mr-3" />
-                            Timeline
-                          </Link>
-                        </Button>
-                        <Button variant="ghost" className="w-full justify-start pl-6" asChild>
-                          <Link to="/insights/activity">
-                            <GitBranch className="w-4 h-4 mr-3" />
-                            Recent Commits
-                          </Link>
-                        </Button>
-                        <Button variant="ghost" className="w-full justify-start pl-6" asChild>
-                          <Link to="/activity/achievements">
-                            <Award className="w-4 h-4 mr-3" />
-                            Achievements
-                          </Link>
+                        <Button 
+                          variant="ghost" 
+                          className="w-full justify-start text-red-400" 
+                          onClick={() => {
+                            setIsMobileMenuOpen(false);
+                            handleLogout();
+                          }}
+                        >
+                          <LogOut className="w-4 h-4 mr-3" />
+                          Sign Out
                         </Button>
                       </div>
-                    </div>
-
-                    {/* Profile Actions */}
-                    <div className="border-t border-white/10 pt-4 space-y-2">
-                      <Button variant="ghost" className="w-full justify-start" asChild>
-                        <Link to="/profile">
-                          <Eye className="w-4 h-4 mr-3" />
-                          View Profile
-                        </Link>
-                      </Button>
-                      <Button variant="ghost" className="w-full justify-start" asChild>
-                        <Link to="/settings">
-                          <Settings className="w-4 h-4 mr-3" />
-                          Settings
-                        </Link>
-                      </Button>
-                      <Button variant="ghost" className="w-full justify-start text-red-400" onClick={handleLogout}>
-                        <LogOut className="w-4 h-4 mr-3" />
-                        Sign Out
-                      </Button>
                     </div>
                   </div>
                 </DrawerContent>

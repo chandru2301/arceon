@@ -24,7 +24,6 @@ export function RepositoryOverview() {
       const data = await githubApi.getUserRepositories();
       setRepositories(data);
     } catch (error) {
-      console.error('Failed to fetch repositories:', error);
       setError('Failed to load repositories');
       // Fallback to mock data for demonstration
       setRepositories([
@@ -165,54 +164,78 @@ export function RepositoryOverview() {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {repositories.map((repo, index) => (
-            <div
-              key={repo.id}
-              className={`glass-card p-6 rounded-lg hover:scale-105 transition-transform duration-300 ${
-                isIntersecting ? 'scroll-float' : ''
-              }`}
-              style={{ animationDelay: `${(index + 2) * 0.1}s` }}
-            >
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center space-x-2">
-                  <h3 className="font-semibold text-lg">{repo.name}</h3>
-                  {repo.private && (
-                    <span className="text-xs bg-muted px-2 py-1 rounded text-muted-foreground">
-                      Private
-                    </span>
-                  )}
-                </div>
-                <div className="flex items-center space-x-1">
-                  <div className={`w-3 h-3 rounded-full ${getLanguageColor(repo.language)}`}></div>
-                  <span className="text-sm text-muted-foreground">{repo.language}</span>
-                </div>
-              </div>
-              
-              <p className="text-sm text-muted-foreground mb-4">
-                {repo.description || 'No description available'}
-              </p>
-              
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-4">
-                  <div className="flex items-center space-x-1">
-                    <Star className="w-4 h-4 text-yellow-500" />
-                    <span className="text-sm">{repo.stargazers_count}</span>
+          {repositories.length === 0 ? (
+            <div className="col-span-full text-center py-12">
+              <div className="glass-card p-8 rounded-lg">
+                <div className="flex flex-col items-center space-y-4">
+                  <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center">
+                    <GitBranch className="w-8 h-8 text-muted-foreground" />
                   </div>
-                  <div className="flex items-center space-x-1">
-                    <GitFork className="w-4 h-4 text-muted-foreground" />
-                    <span className="text-sm">{repo.forks_count}</span>
-                  </div>
-                  <div className="flex items-center space-x-1">
-                    <Eye className="w-4 h-4 text-muted-foreground" />
-                    <span className="text-sm">{repo.watchers_count}</span>
-                  </div>
+                  <h3 className="text-lg font-semibold">No repositories found</h3>
+                  <p className="text-muted-foreground max-w-md">
+                    You don't have any repositories yet. Create your first repository on GitHub to see it here.
+                  </p>
+                  <a
+                    href="https://github.com/new"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-4 py-2 bg-primary text-primary-foreground rounded hover:bg-primary/90 transition-colors"
+                  >
+                    Create Repository
+                  </a>
                 </div>
-                <span className="text-xs text-muted-foreground">
-                  Updated {formatDate(repo.updated_at)}
-                </span>
               </div>
             </div>
-          ))}
+          ) : (
+            repositories.map((repo, index) => (
+              <div
+                key={repo.id}
+                className={`glass-card p-6 rounded-lg hover:scale-105 transition-transform duration-300 ${
+                  isIntersecting ? 'scroll-float' : ''
+                }`}
+                style={{ animationDelay: `${(index + 2) * 0.1}s` }}
+              >
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center space-x-2">
+                    <h3 className="font-semibold text-lg">{repo.name}</h3>
+                    {repo.private && (
+                      <span className="text-xs bg-muted px-2 py-1 rounded text-muted-foreground">
+                        Private
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex items-center space-x-1">
+                    <div className={`w-3 h-3 rounded-full ${getLanguageColor(repo.language)}`}></div>
+                    <span className="text-sm text-muted-foreground">{repo.language}</span>
+                  </div>
+                </div>
+                
+                <p className="text-sm text-muted-foreground mb-4">
+                  {repo.description || 'No description available'}
+                </p>
+                
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-4">
+                    <div className="flex items-center space-x-1">
+                      <Star className="w-4 h-4 text-yellow-500" />
+                      <span className="text-sm">{repo.stargazers_count}</span>
+                    </div>
+                    <div className="flex items-center space-x-1">
+                      <GitFork className="w-4 h-4 text-muted-foreground" />
+                      <span className="text-sm">{repo.forks_count}</span>
+                    </div>
+                    <div className="flex items-center space-x-1">
+                      <Eye className="w-4 h-4 text-muted-foreground" />
+                      <span className="text-sm">{repo.watchers_count}</span>
+                    </div>
+                  </div>
+                  <span className="text-xs text-muted-foreground">
+                    Updated {formatDate(repo.updated_at)}
+                  </span>
+                </div>
+              </div>
+            ))
+          )}
         </div>
       )}
     </section>

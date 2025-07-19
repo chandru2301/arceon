@@ -12,14 +12,14 @@ export const DashboardRedirect: React.FC = () => {
   useEffect(() => {
     const handleRedirect = async () => {
       try {
-        console.log('🔍 DashboardRedirect - Analyzing URL parameters...');
+        //console.log('🔍 DashboardRedirect - Analyzing URL parameters...');
         const urlParams = new URLSearchParams(window.location.search);
         const code = urlParams.get('code');
         const state = urlParams.get('state');
         
-        console.log('🔑 GitHub OAuth code present:', !!code);
-        console.log('🔗 GitHub OAuth state present:', !!state);
-        console.log('🌐 API Base URL:', import.meta.env.VITE_API_BASE_URL || config.apiBaseUrl);
+        //console.log('🔑 GitHub OAuth code present:', !!code);
+        //console.log('🔗 GitHub OAuth state present:', !!state);
+        //console.log('🌐 API Base URL:', import.meta.env.VITE_API_BASE_URL || config.apiBaseUrl);
         
         if (code) {
           setMessage('GitHub code detected! Authenticating...');
@@ -29,7 +29,7 @@ export const DashboardRedirect: React.FC = () => {
             const result = await authApi.handleOAuthCallback(code);
             
             if (result.success && result.token) {
-              console.log('✅ Token exchange successful');
+              //console.log('✅ Token exchange successful');
               
               // Now call checkAuth to complete login
               await checkAuth();
@@ -61,7 +61,7 @@ export const DashboardRedirect: React.FC = () => {
                   localStorage.removeItem('auth_redirect_path');
                 }
                 
-                console.log('🚀 Redirecting to:', redirectTo);
+                //  console.log('🚀 Redirecting to:', redirectTo);
                 window.location.href = redirectTo;
               }, 1500);
             } else {

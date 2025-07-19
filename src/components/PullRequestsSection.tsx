@@ -24,7 +24,6 @@ export function PullRequestsSection() {
       const data = await githubApi.getUserPullRequests();
       setPullRequests(data);
     } catch (error) {
-      console.error('Failed to fetch pull requests:', error);
       setError('Failed to load pull requests');
       // Fallback to mock data for demonstration
       setPullRequests([
@@ -177,59 +176,83 @@ export function PullRequestsSection() {
         </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {pullRequests.map((pr, index) => (
-            <div
-              key={pr.id}
-              className={`glass-card p-6 rounded-lg hover:scale-105 transition-transform duration-300 ${
-                isIntersecting ? 'scroll-float' : ''
-              }`}
-              style={{ animationDelay: `${(index + 2) * 0.1}s` }}
-            >
-              <div className="flex items-start justify-between mb-3">
-                <div className="flex items-center space-x-2">
-                  {getStatusIcon(pr.state)}
-                  <span className={`text-xs px-2 py-1 rounded-full ${getStatusColor(pr.state)}`}>
-                    {pr.state}
-                  </span>
-                </div>
-                <span className="text-xs text-muted-foreground">{formatDate(pr.created_at)}</span>
-              </div>
-              
-              <h3 className="font-semibold text-lg mb-2">{pr.title}</h3>
-              <p className="text-sm text-muted-foreground mb-4">
-                {pr.body || 'No description available'}
-              </p>
-              
-              <div className="flex items-center justify-between text-sm">
-                <div className="flex items-center space-x-4">
-                  <span className="text-muted-foreground">
-                    by <span className="text-foreground font-medium">{pr.user.login}</span>
-                  </span>
-                </div>
-                <a
-                  href={pr.html_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-primary hover:underline"
-                >
-                  View on GitHub
-                </a>
-              </div>
-              
-              <div className="flex items-center justify-between mt-4 pt-4 border-t border-border">
-                <div className="flex items-center space-x-4 text-sm text-muted-foreground">
-                  <span>PR #{pr.id}</span>
-                  <span>Updated {formatDate(pr.updated_at)}</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  {pr.state === 'merged' && (
-                    <CheckCircle className="w-4 h-4 text-primary" />
-                  )}
-                  <Clock className="w-4 h-4 text-muted-foreground" />
+          {pullRequests.length === 0 ? (
+            <div className="col-span-full text-center py-12">
+              <div className="glass-card p-8 rounded-lg">
+                <div className="flex flex-col items-center space-y-4">
+                  <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center">
+                    <GitPullRequest className="w-8 h-8 text-muted-foreground" />
+                  </div>
+                  <h3 className="text-lg font-semibold">No pull requests found</h3>
+                  <p className="text-muted-foreground max-w-md">
+                    You don't have any pull requests yet. Create your first pull request on GitHub to see it here.
+                  </p>
+                  <a
+                    href="https://github.com"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-4 py-2 bg-primary text-primary-foreground rounded hover:bg-primary/90 transition-colors"
+                  >
+                    Browse GitHub
+                  </a>
                 </div>
               </div>
             </div>
-          ))}
+          ) : (
+            pullRequests.map((pr, index) => (
+              <div
+                key={pr.id}
+                className={`glass-card p-6 rounded-lg hover:scale-105 transition-transform duration-300 ${
+                  isIntersecting ? 'scroll-float' : ''
+                }`}
+                style={{ animationDelay: `${(index + 2) * 0.1}s` }}
+              >
+                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 mb-3">
+                  <div className="flex items-center space-x-2">
+                    {getStatusIcon(pr.state)}
+                    <span className={`text-xs px-2 py-1 rounded-full ${getStatusColor(pr.state)}`}>
+                      {pr.state}
+                    </span>
+                  </div>
+                  <span className="text-xs text-muted-foreground">{formatDate(pr.created_at)}</span>
+                </div>
+                
+                <h3 className="font-semibold text-lg mb-2 break-words">{pr.title}</h3>
+                <p className="text-sm text-muted-foreground mb-4 line-clamp-3">
+                  {pr.body || 'No description available'}
+                </p>
+                
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-sm">
+                  <div className="flex items-center space-x-4">
+                    <span className="text-muted-foreground">
+                      by <span className="text-foreground font-medium">{pr.user.login}</span>
+                    </span>
+                  </div>
+                  <a
+                    href={pr.html_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary hover:underline flex-shrink-0"
+                  >
+                    View on GitHub
+                  </a>
+                </div>
+                
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mt-4 pt-4 border-t border-border">
+                  <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+                    <span>PR #{pr.id}</span>
+                    <span>Updated {formatDate(pr.updated_at)}</span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    {pr.state === 'merged' && (
+                      <CheckCircle className="w-4 h-4 text-primary" />
+                    )}
+                    <Clock className="w-4 h-4 text-muted-foreground" />
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
         </div>
       )}
     </section>

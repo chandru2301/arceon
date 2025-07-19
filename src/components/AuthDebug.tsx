@@ -228,7 +228,7 @@ export const AuthDebug: React.FC = () => {
     const state = encodeURIComponent(JSON.stringify({ redirect: '/dashboard' }));
     const loginUrl = `${API_BASE_URL}${config.github.authorizationUrl}?redirect_uri=${encodeURIComponent(redirectUri)}&state=${state}`;
     
-    console.log('🚀 Testing login with URL:', loginUrl);
+    //  console.log('🚀 Testing login with URL:', loginUrl);
     window.location.href = loginUrl;
   };
 
