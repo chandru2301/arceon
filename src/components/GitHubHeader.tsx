@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { 
   GitBranch, 
   Star, 
@@ -54,7 +54,11 @@ export function GitHubHeader() {
   const { theme, toggleTheme } = useTheme();
   const { isAuthenticated, user, login, logout } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-
+  const navigate = useNavigate();
+  const handleViewProfile = (username: string) => {
+    console.log(username);
+    navigate(`/profile/${username}`);
+  };
   // Handle body overflow and viewport when mobile menu is open
   useEffect(() => {
     if (isMobileMenuOpen) {
@@ -103,24 +107,34 @@ export function GitHubHeader() {
             {/* <div className="relative" onClick={() => window.location.href = 'https://arceon.netlify.app/dashboard'}> */}
             <div className="relative" onClick={() => window.location.href = 'http://localhost:3000/dashboard'}>
               <img
-                src={user?.avatar_url || 'https://github.com/github.png'}
+                src={'/areceon.png'}
                 alt={user?.name || 'GitHub User'}
                 className="w-10 h-10 rounded-full ring-2 ring-primary/20"
               />
-              {isAuthenticated && (
+              {/* {isAuthenticated && (
                 <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-primary rounded-full border-2 border-background"></div>
-              )}
+              )} */}
             </div>
-            <div className="hidden sm:block">
-              <h2 className="text-lg font-semibold">{user?.name || 'GitHub Flow'}</h2>
-              <p className="text-sm text-muted-foreground">
+            <div className=" sm:block">
+              {/* <h5 className="text-xl font-semibold" style={{ fontSize: '2rem' }}>Arceon</h5> */}
+            
+              <img 
+                src="/artext.png" 
+                alt="Arceon" 
+                className="w-22 h-5" 
+                style={{
+                  filter: theme === 'light' ? 'invert(1) brightness(0)' : 'none'
+                }}
+              />
+             
+              {/* <p className="text-sm text-muted-foreground">
                 {user?.login || 'Welcome'} 
                 {user?.created_at && (
                   <span className="text-xs text-muted-foreground">
                     {' '}({new Date(user.created_at).toLocaleDateString()} - {new Date(user.updated_at).toLocaleDateString()})
                   </span>
                 )}
-              </p>
+              </p> */}
             </div>
           </div>
 
@@ -332,10 +346,10 @@ export function GitHubHeader() {
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem asChild className="cursor-pointer hover:bg-background/20">
-                    <Link to="/profile" className="flex items-center">
+                    <span className="flex items-center" onClick={() => handleViewProfile(user?.login)}>
                       <Eye className="w-4 h-4 mr-3" />
                       View Profile
-                    </Link>
+                    </span>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild className="cursor-pointer hover:bg-background/20">
                     <Link to="/settings" className="flex items-center">
@@ -456,10 +470,10 @@ export function GitHubHeader() {
                       {/* Profile Actions */}
                       <div className="border-t border-white/10 pt-4 space-y-2">
                         <Button variant="ghost" className="w-full justify-start" asChild>
-                          <Link to="/profile" onClick={() => setIsMobileMenuOpen(false)}>
+                          <span onClick={() => setIsMobileMenuOpen(false)}>
                             <Eye className="w-4 h-4 mr-3" />
-                            View Profile
-                          </Link>
+                            <span onClick={() => handleViewProfile(user?.login)}>View Profile</span>
+                          </span>
                         </Button>
                         <Button variant="ghost" className="w-full justify-start" asChild>
                           <Link to="/settings" onClick={() => setIsMobileMenuOpen(false)}>

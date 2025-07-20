@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { githubApi } from '@/services/api';
 import LanguageCharts from '@/components/LanguageCharts';
 
@@ -16,6 +17,8 @@ interface LanguageData {
 }
 
 export default function ProfilePage() {
+  const { username } = useParams<{ username?: string }>();
+  const navigate = useNavigate();
   const [profileData, setProfileData] = useState<any>({
     name: '',
     login: '',
@@ -39,20 +42,27 @@ export default function ProfilePage() {
   const [languageData, setLanguageData] = useState<LanguageData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingLanguages, setIsLoadingLanguages] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const getPinnedRepos = async () => {
+  const getPinnedRepos = async (targetUsername: string) => {
     setIsLoading(true);
-    const pinnedReposData = await githubApi.getPinnedRepos();
-    const nodes = pinnedReposData?.data?.user?.pinnedItems?.nodes || [];
-    console.log(nodes);
-    setPinnedRepos(nodes);
-    setIsLoading(false);
+    try {
+      const pinnedReposData = await githubApi.getPinnedRepos(targetUsername);
+      const nodes = pinnedReposData?.data?.user?.pinnedItems?.nodes || [];
+      console.log(nodes);
+      setPinnedRepos(nodes);
+    } catch (error) {
+      console.error('Error fetching pinned repos:', error);
+      setPinnedRepos([]);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const getLanguageData = async () => {
+  const getLanguageData = async (targetUsername: string) => {
     try {
       setIsLoadingLanguages(true);
-      const data = await githubApi.getUserLanguages();
+      const data = await githubApi.getUserLanguages(targetUsername);
       setLanguageData(data || []);
     } catch (error) {
       console.error('Error fetching language data:', error);
@@ -64,23 +74,63 @@ export default function ProfilePage() {
   
   useEffect(() => {
     const fetchProfileData = async () => {
+      if (!username) {
+        setError('No username provided');
+        setIsLoading(false);
+        return;
+      }
+
       setIsLoading(true);
-      const data = await githubApi.getUserProfile();
-      setProfileData(data);
-      getPinnedRepos();
-      setIsLoading(false);
+      setError(null);
+      
+      try {
+        const data = await githubApi.getUserProfile(username);
+        setProfileData(data);
+        getPinnedRepos(username);
+        setIsLoading(false);
+      } catch (error: any) {
+        console.error('Error fetching profile data:', error);
+        setError(error.message || 'Failed to load profile data');
+        setIsLoading(false);
+      }
     };
+
     const fetchStars = async () => {
-      setIsLoading(true);
-      const { totalStars } = await githubApi.getTotalStars();
-      setProfileData(prev => ({ ...prev, totalStars }));
-      setIsLoading(false);
+      if (!username) return;
+      
+      try {
+        const { totalStars } = await githubApi.getTotalStars(username);
+        setProfileData(prev => ({ ...prev, totalStars }));
+      } catch (error) {
+        console.error('Error fetching stars:', error);
+      }
     };
     
     fetchProfileData();
     fetchStars();
-    getLanguageData();
-  }, []);
+    if (username) {
+      getLanguageData(username);
+    }
+  }, [username]);
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-background via-background/95 to-primary/5">
+        <GitHubHeader />
+        <main className="container mx-auto px-4 py-8">
+          <div className="flex items-center justify-center min-h-[400px]">
+            <div className="text-center">
+              <p className="text-lg text-red-500 mb-4">{error}</p>
+              <Button onClick={() => navigate('/dashboard')}>
+                Back to Dashboard
+              </Button>
+            </div>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background/95 to-primary/5">

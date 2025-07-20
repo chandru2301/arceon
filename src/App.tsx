@@ -231,6 +231,14 @@ const AppRoutes: React.FC = () => {
         } 
       />
       <Route 
+        path="/profile/:username" 
+        element={
+          <ProtectedRoute>
+            <ProfilePage />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
         path="/settings" 
         element={
           <ProtectedRoute>

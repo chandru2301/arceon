@@ -1,5 +1,6 @@
 import { Users, UserPlus, Star, GitFork, Eye, Loader2, RefreshCw } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { GitHubHeader } from '@/components/GitHubHeader';
 import { Footer } from '@/components/Footer';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -30,6 +31,7 @@ interface CommunityStats {
 }
 
 export default function CommunityActivityPage() {
+  const navigate = useNavigate();
   const [followers, setFollowers] = useState<Follower[]>([]);
   const [starredActivity, setStarredActivity] = useState<StarredActivity[]>([]);
   const [communityStats, setCommunityStats] = useState<CommunityStats | null>(null);
@@ -73,6 +75,10 @@ export default function CommunityActivityPage() {
 
   const handleRefresh = () => {
     fetchCommunityData(true);
+  };
+
+  const handleViewProfile = (username: string) => {
+    navigate(`/profile/${username}`);
   };
 
   const getActivityIcon = (type: string) => {
@@ -189,7 +195,7 @@ export default function CommunityActivityPage() {
                       <Button 
                         variant="outline" 
                         size="sm"
-                        onClick={() => window.open(`https://github.com/${follower.username}`, '_blank')}
+                        onClick={() => handleViewProfile(follower.username)}
                       >
                         View Profile
                       </Button>

@@ -182,9 +182,10 @@ export const githubApi = {
   },
   
   // Get user profile
-  getUserProfile: async () => {
+  getUserProfile: async (username?: string) => {
     try {
-      const response = await api.get('/api/github/profile');
+      const url = username ? `/api/github/profile/${username}` : '/api/github/profile';
+      const response = await api.get(url);
       return response.data;
     } catch (error: any) {
       console.error('Failed to fetch profile:', error);
@@ -193,9 +194,10 @@ export const githubApi = {
   },
 
   // Get user pull requests
-  getUserPullRequests: async () => {
+  getUserPullRequests: async (username?: string) => {
     try {
-      const response = await api.get('/api/github/pull-requests');
+      const url = username ? `/api/github/pull-requests/${username}` : '/api/github/pull-requests';
+      const response = await api.get(url);
       return response.data;
     } catch (error: any) {
       console.error('Failed to fetch pull requests:', error);
@@ -204,9 +206,10 @@ export const githubApi = {
   },
 
   // Get user commits
-  getUserCommits: async () => {
+  getUserCommits: async (username?: string) => {
     try {
-      const response = await api.get('/api/github/commits');
+      const url = username ? `/api/github/commits/${username}` : '/api/github/commits';
+      const response = await api.get(url);
       return response.data;
     } catch (error: any) {
       console.error('Failed to fetch commits:', error);
@@ -215,9 +218,10 @@ export const githubApi = {
   },
 
   // Get issues
-  getUserIssues: async () => {
+  getUserIssues: async (username?: string) => {
     try {
-      const response = await api.get('/api/github/user-issues');
+      const url = username ? `/api/github/user-issues/${username}` : '/api/github/user-issues';
+      const response = await api.get(url);
       return response.data;
     } catch (error: any) {
       console.error('Failed to fetch issues:', error);
@@ -226,9 +230,10 @@ export const githubApi = {
   },
 
   // Get activity
-  getActivity: async () => {
+  getActivity: async (username?: string) => {
     try {
-      const response = await api.get('/api/github/activity');
+      const url = username ? `/api/github/activity/${username}` : '/api/github/activity';
+      const response = await api.get(url);
       return response.data;
     } catch (error: any) {
       console.error('Failed to fetch activity:', error);
@@ -237,9 +242,10 @@ export const githubApi = {
   },
 
   // Get user followers
-  getFollowers: async () => {
+  getFollowers: async (username?: string) => {
     try {
-      const response = await api.get('/api/github/followers');
+      const url = username ? `/api/github/followers/${username}` : '/api/github/followers';
+      const response = await api.get(url);
       return response.data;
     } catch (error: any) {
       console.error('Failed to fetch followers:', error);
@@ -248,10 +254,11 @@ export const githubApi = {
   },
 
   // Get user starred repositories
-  getUserStarredRepositories: async () => {
+  getUserStarredRepositories: async (username?: string) => {
     try {
       console.log('🔄 API: Fetching starred repositories...');
-      const response = await api.get('/api/github/starred');
+      const url = username ? `/api/github/starred/${username}` : '/api/github/starred';
+      const response = await api.get(url);
       console.log('🔄 API: Starred repositories fetched:', response.data);
       return response.data;
     } catch (error: any) {
@@ -273,9 +280,10 @@ export const githubApi = {
   },
 
   // Get user events
-  getUserEvents: async () => {
+  getUserEvents: async (username?: string) => {
     try {
-      const response = await api.get('/api/github/activity');
+      const url = username ? `/api/github/activity/${username}` : '/api/github/activity';
+      const response = await api.get(url);
       console.log('🔄 API: User events fetched:', response.data);
       return response.data;
     } catch (error: any) {
@@ -285,9 +293,10 @@ export const githubApi = {
   },
 
   // Get user contributions using GraphQL
-  getUserContributions: async () => {
+  getUserContributions: async (username?: string) => {
     try {
-      const response = await api.post('/api/github/contributions');
+      const url = username ? `/api/github/contributions/${username}` : '/api/github/contributions';
+      const response = await api.post(url);
       console.log('🔄 API: User contributions fetched:', response.data);
       return response.data;
     } catch (error: any) {
@@ -297,9 +306,10 @@ export const githubApi = {
   },
 
   // Get total stars
-  getTotalStars: async () => {
+  getTotalStars: async (username?: string) => {
     try {
-      const response = await api.get('/api/github/stars');
+      const url = username ? `/api/github/stars/${username}` : '/api/github/stars';
+      const response = await api.get(url);
       return response.data;
     } catch (error: any) {
       console.error('Failed to fetch total stars:', error);
@@ -308,9 +318,10 @@ export const githubApi = {
   },
 
   // Get pinned repositories using GraphQL
-  getPinnedRepos: async () => {
+  getPinnedRepos: async (username?: string) => {
     try {
-      const response = await api.post('/api/github/pinned');
+      const url = username ? `/api/github/pinned/${username}` : '/api/github/pinned';
+      const response = await api.post(url);
       return response.data;
     } catch (error: any) {
       console.error('Failed to fetch pinned repositories:', error);
@@ -330,9 +341,10 @@ export const githubApi = {
   },
 
   // Get recent followers with activity
-  getRecentFollowers: async () => {
+  getRecentFollowers: async (username?: string) => {
     try {
-      const response = await api.get('/api/github/recent-followers');
+      const url = username ? `/api/github/recent-followers/${username}` : '/api/github/recent-followers';
+      const response = await api.get(url);
       return response.data;
     } catch (error: any) {
       console.error('Failed to fetch recent followers:', error);
@@ -341,9 +353,10 @@ export const githubApi = {
   },
 
   // Get starred repository activity
-  getStarredActivity: async () => {
+  getStarredActivity: async (username?: string) => {
     try {
-      const response = await api.get('/api/github/starred-activity');
+      const url = username ? `/api/github/starred-activity/${username}` : '/api/github/starred-activity';
+      const response = await api.get(url);
       return response.data;
     } catch (error: any) {
       console.error('Failed to fetch starred activity:', error);
@@ -352,9 +365,10 @@ export const githubApi = {
   },
 
   // Get community stats
-  getCommunityStats: async () => {
+  getCommunityStats: async (username?: string) => {
     try {
-      const response = await api.get('/api/github/community-stats');
+      const url = username ? `/api/github/community-stats/${username}` : '/api/github/community-stats';
+      const response = await api.get(url);
       return response.data;
     } catch (error: any) {
       console.error('Failed to fetch community stats:', error);
@@ -363,9 +377,10 @@ export const githubApi = {
   },
 
   // Get user achievements
-  getUserAchievements: async () => {
+  getUserAchievements: async (username?: string) => {
     try {
-      const response = await api.get('/api/github/achievements');
+      const url = username ? `/api/github/achievements/${username}` : '/api/github/achievements';
+      const response = await api.get(url);
       return response.data;
     } catch (error: any) {
       console.error('Failed to fetch achievements:', error);
@@ -374,9 +389,10 @@ export const githubApi = {
   },
 
   // Get user milestones
-  getUserMilestones: async () => {
+  getUserMilestones: async (username?: string) => {
     try {
-      const response = await api.get('/api/github/milestones');
+      const url = username ? `/api/github/milestones/${username}` : '/api/github/milestones';
+      const response = await api.get(url);
       return response.data;
     } catch (error: any) {
       console.error('Failed to fetch milestones:', error);
@@ -385,9 +401,10 @@ export const githubApi = {
   },
 
   // Get user language statistics
-  getUserLanguages: async () => {
+  getUserLanguages: async (username?: string) => {
     try {
-      const response = await api.get('/api/github/languages');
+      const url = username ? `/api/github/languages/${username}` : '/api/github/languages';
+      const response = await api.get(url);
       return response.data;
     } catch (error: any) {
       console.error('Failed to fetch language statistics:', error);
