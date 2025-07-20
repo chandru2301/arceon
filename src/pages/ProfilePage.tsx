@@ -6,6 +6,14 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useState, useEffect } from 'react';
 import { githubApi } from '@/services/api';
+import LanguageCharts from '@/components/LanguageCharts';
+
+interface LanguageData {
+  name: string;
+  value: number;
+  percentage: number;
+  color: string;
+}
 
 export default function ProfilePage() {
   const [profileData, setProfileData] = useState<any>({
@@ -28,7 +36,10 @@ export default function ProfilePage() {
     totalStars: '', 
   });
   const [pinnedRepos, setPinnedRepos] = useState<any[]>([]);
+  const [languageData, setLanguageData] = useState<LanguageData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingLanguages, setIsLoadingLanguages] = useState(true);
+
   const getPinnedRepos = async () => {
     setIsLoading(true);
     const pinnedReposData = await githubApi.getPinnedRepos();
@@ -36,6 +47,19 @@ export default function ProfilePage() {
     console.log(nodes);
     setPinnedRepos(nodes);
     setIsLoading(false);
+  };
+
+  const getLanguageData = async () => {
+    try {
+      setIsLoadingLanguages(true);
+      const data = await githubApi.getUserLanguages();
+      setLanguageData(data || []);
+    } catch (error) {
+      console.error('Error fetching language data:', error);
+      setLanguageData([]);
+    } finally {
+      setIsLoadingLanguages(false);
+    }
   };
   
   useEffect(() => {
@@ -55,6 +79,7 @@ export default function ProfilePage() {
     
     fetchProfileData();
     fetchStars();
+    getLanguageData();
   }, []);
 
   return (
@@ -149,6 +174,12 @@ export default function ProfilePage() {
                 </CardContent>
               </Card>
             </div>
+
+            {/* Language Charts */}
+            <LanguageCharts 
+              languageData={languageData} 
+              isLoading={isLoadingLanguages} 
+            />
 
             {/* Pinned Repositories */}
             <Card className="glass-card">

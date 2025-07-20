@@ -382,6 +382,17 @@ export const githubApi = {
       console.error('Failed to fetch milestones:', error);
       throw error;
     }
+  },
+
+  // Get user language statistics
+  getUserLanguages: async () => {
+    try {
+      const response = await api.get('/api/github/languages');
+      return response.data;
+    } catch (error: any) {
+      console.error('Failed to fetch language statistics:', error);
+      throw error;
+    }
   }
 };
 
