@@ -100,7 +100,8 @@ export function GitHubHeader() {
         <div className="flex items-center justify-between">
           {/* Profile Section */}
           <div className="flex items-center space-x-4">
-            <div className="relative" onClick={() => window.location.href = 'https://arceon.netlify.app/dashboard'}>
+            {/* <div className="relative" onClick={() => window.location.href = 'https://arceon.netlify.app/dashboard'}> */}
+            <div className="relative" onClick={() => window.location.href = 'http://localhost:3000/dashboard'}>
               <img
                 src={user?.avatar_url || 'https://github.com/github.png'}
                 alt={user?.name || 'GitHub User'}

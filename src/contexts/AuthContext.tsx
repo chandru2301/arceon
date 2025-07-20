@@ -48,8 +48,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         console.log('❌ No token found');
         // No token, user is not authenticated
         // Note: We don't handle OAuth codes here anymore since OAuthCallback component handles that
-        setIsAuthenticated(false);
-        setUser(null);
+          setIsAuthenticated(false);
+          setUser(null);
       }
     } catch (error) {
       console.error('💥 Auth check failed:', error);

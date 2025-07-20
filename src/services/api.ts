@@ -327,6 +327,61 @@ export const githubApi = {
       console.error('Failed to check health:', error);
       throw error;
     }
+  },
+
+  // Get recent followers with activity
+  getRecentFollowers: async () => {
+    try {
+      const response = await api.get('/api/github/recent-followers');
+      return response.data;
+    } catch (error: any) {
+      console.error('Failed to fetch recent followers:', error);
+      throw error;
+    }
+  },
+
+  // Get starred repository activity
+  getStarredActivity: async () => {
+    try {
+      const response = await api.get('/api/github/starred-activity');
+      return response.data;
+    } catch (error: any) {
+      console.error('Failed to fetch starred activity:', error);
+      throw error;
+    }
+  },
+
+  // Get community stats
+  getCommunityStats: async () => {
+    try {
+      const response = await api.get('/api/github/community-stats');
+      return response.data;
+    } catch (error: any) {
+      console.error('Failed to fetch community stats:', error);
+      throw error;
+    }
+  },
+
+  // Get user achievements
+  getUserAchievements: async () => {
+    try {
+      const response = await api.get('/api/github/achievements');
+      return response.data;
+    } catch (error: any) {
+      console.error('Failed to fetch achievements:', error);
+      throw error;
+    }
+  },
+
+  // Get user milestones
+  getUserMilestones: async () => {
+    try {
+      const response = await api.get('/api/github/milestones');
+      return response.data;
+    } catch (error: any) {
+      console.error('Failed to fetch milestones:', error);
+      throw error;
+    }
   }
 };
 

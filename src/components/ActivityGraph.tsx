@@ -412,59 +412,59 @@ export function ActivityGraph() {
             </div>
           ) : (
             /* Activity Grid */
-            <div className="relative">
-              {/* Month labels */}
+          <div className="relative">
+            {/* Month labels */}
               <div className="flex justify-between text-xs text-muted-foreground mb-2 ml-6 overflow-x-auto">
-                {getMonthLabels().map((month, index) => (
+              {getMonthLabels().map((month, index) => (
                   <span key={index} className="w-10 text-center flex-shrink-0">{month}</span>
+              ))}
+            </div>
+
+            <div className="flex">
+              {/* Day labels */}
+              <div className="flex flex-col justify-between text-xs text-muted-foreground mr-2 h-[104px]">
+                {getWeekLabels().map((day, index) => (
+                  <span key={index} className="h-3 leading-3">{day}</span>
                 ))}
               </div>
 
-              <div className="flex">
-                {/* Day labels */}
-                <div className="flex flex-col justify-between text-xs text-muted-foreground mr-2 h-[104px]">
-                  {getWeekLabels().map((day, index) => (
-                    <span key={index} className="h-3 leading-3">{day}</span>
-                  ))}
-                </div>
-
-                {/* Activity grid */}
+              {/* Activity grid */}
                 <div className="grid grid-cols-53 gap-1 grid-rows-7 overflow-x-auto">
-                  {activityData && activityData.length > 0 ? (
-                    activityData.slice(-371).map((day, index) => ( // Show last 371 days (53 weeks * 7 days)
-                      <div
-                        key={index}
-                        className={`contribution-square ${getContributionClass(day.items?.level ?? 0)}`}
-                        title={`${day.items?.count ?? 0} contributions on ${new Date(day.items?.date ?? '').toLocaleDateString()}`}
-                      />
-                    ))
-                  ) : (
-                    // Render empty grid when no data
-                    Array.from({ length: 371 }, (_, index) => ( // 53 weeks * 7 days
-                      <div
-                        key={index}
-                        className="contribution-square contribution-0"
-                        title="No contributions"
-                      />
-                    ))
-                  )}
-                </div>
-              </div>
-
-              {/* Legend */}
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mt-4 text-xs text-muted-foreground">
-                <span>Less</span>
-                <div className="flex items-center space-x-1">
-                  {[0, 1, 2, 3, 4, 5].map((level) => (
+                {activityData && activityData.length > 0 ? (
+                  activityData.slice(-371).map((day, index) => ( // Show last 371 days (53 weeks * 7 days)
                     <div
-                      key={level}
-                      className={`contribution-square ${getContributionClass(level)}`}
+                      key={index}
+                      className={`contribution-square ${getContributionClass(day.items?.level ?? 0)}`}
+                      title={`${day.items?.count ?? 0} contributions on ${new Date(day.items?.date ?? '').toLocaleDateString()}`}
                     />
-                  ))}
-                </div>
-                <span>More</span>
+                  ))
+                ) : (
+                  // Render empty grid when no data
+                  Array.from({ length: 371 }, (_, index) => ( // 53 weeks * 7 days
+                    <div
+                      key={index}
+                      className="contribution-square contribution-0"
+                      title="No contributions"
+                    />
+                  ))
+                )}
               </div>
             </div>
+
+            {/* Legend */}
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mt-4 text-xs text-muted-foreground">
+              <span>Less</span>
+              <div className="flex items-center space-x-1">
+                {[0, 1, 2, 3, 4, 5].map((level) => (
+                  <div
+                    key={level}
+                    className={`contribution-square ${getContributionClass(level)}`}
+                  />
+                ))}
+              </div>
+              <span>More</span>
+            </div>
+          </div>
           )}
         </div>
       )}
