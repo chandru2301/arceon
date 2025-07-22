@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { useState, useEffect } from 'react';
 import { githubApi } from '@/services/api';
+import { Button } from '@/components/ui/button';
 
 export default function RepoHealthPage() {
   const [repositories, setRepositories] = useState<any[]>([]);
@@ -278,198 +279,221 @@ export default function RepoHealthPage() {
     <div className="min-h-screen bg-gradient-to-br from-background via-background/95 to-primary/5">
       <GitHubHeader />
       
-      <main className="container mx-auto px-4 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2 flex items-center gap-2">
-            <Activity className="w-8 h-8 text-primary" />
-            Repository Health
+      <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 lg:py-8">
+        {/* Header Section - Mobile Responsive */}
+        <div className="mb-4 sm:mb-6 lg:mb-8">
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold mb-2 flex items-center gap-2">
+            <Activity className="w-5 h-5 sm:w-6 sm:h-6 lg:w-8 lg:h-8 text-primary flex-shrink-0" />
+            <span className="text-lg sm:text-xl lg:text-3xl">Repository Health</span>
           </h1>
-          <p className="text-muted-foreground">Monitor the health and activity of your repositories</p>
+          <p className="text-xs sm:text-sm lg:text-base text-muted-foreground">
+            Monitor the health and activity of your repositories
+          </p>
         </div>
 
-        <div className="grid gap-6">
+        {/* Repositories Grid - Mobile Responsive */}
+        <div className="grid gap-3 sm:gap-4 lg:gap-6">
           {loading ? (
-            <div className="flex justify-center items-center h-full">
-              <Loader2 className="w-6 h-6 animate-spin text-primary" />
+            <div className="flex justify-center items-center min-h-[200px] sm:min-h-[300px] lg:min-h-[400px]">
+              <div className="flex items-center gap-2 sm:gap-3">
+                <Loader2 className="w-5 h-5 sm:w-6 sm:h-6 lg:w-8 lg:h-8 animate-spin text-primary" />
+                <span className="text-xs sm:text-sm lg:text-base">Analyzing repository health...</span>
+              </div>
+            </div>
+          ) : repositories.length === 0 ? (
+            <div className="text-center py-8 sm:py-12">
+              <div className="flex flex-col items-center space-y-3 sm:space-y-4">
+                <div className="w-12 h-12 sm:w-16 sm:h-16 bg-muted rounded-full flex items-center justify-center">
+                  <Activity className="w-6 h-6 sm:w-8 sm:h-8 text-muted-foreground" />
+                </div>
+                <h3 className="text-sm sm:text-base lg:text-lg font-semibold">No repositories found</h3>
+                <p className="text-xs sm:text-sm lg:text-base text-muted-foreground max-w-sm px-4">
+                  Unable to load repository health data. Please check your GitHub connection.
+                </p>
+                <Button 
+                  onClick={() => window.location.reload()}
+                  className="px-3 py-2 sm:px-4 sm:py-2 text-xs sm:text-sm"
+                >
+                  Refresh
+                </Button>
+              </div>
             </div>
           ) : (
             repositories.map((repo, index) => (
             <Card key={index} className="glass-card">
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle className="flex items-center gap-2">
-                      {repo.name}
-                    <Badge variant={getStatusVariant(repo.status)}>
+              <CardHeader className="pb-3 sm:pb-4">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4">
+                  <CardTitle className="flex flex-col sm:flex-row sm:items-center gap-2">
+                    <span className="font-medium text-sm sm:text-base lg:text-lg truncate">{repo.name}</span>
+                    <Badge variant={getStatusVariant(repo.status)} className="text-xs w-fit">
                       {repo.status}
                     </Badge>
                   </CardTitle>
-                  <div className={`text-2xl font-bold ${getHealthColor(repo.health)}`}>
+                  <div className={`text-lg sm:text-xl lg:text-2xl font-bold ${getHealthColor(repo.health)}`}>
                     {repo.health}%
                   </div>
                 </div>
               </CardHeader>
-              <CardContent>
-                <div className="space-y-6">
-                  {/* Health Progress */}
-                  <div>
-                    <div className="flex justify-between text-sm mb-2">
-                      <span>Repository Health</span>
-                      <span>{repo.health}%</span>
-                    </div>
-                    <Progress value={repo.health} className="h-2" />
+              <CardContent className="space-y-4 sm:space-y-6">
+                {/* Health Progress */}
+                <div>
+                  <div className="flex justify-between text-xs sm:text-sm mb-2">
+                    <span>Repository Health</span>
+                    <span>{repo.health}%</span>
                   </div>
+                  <Progress value={repo.health} className="h-2" />
+                </div>
 
-                  {/* Health Breakdown */}
-                  {repo.healthBreakdown && (
-                    <div className="space-y-4">
-                      <h4 className="font-semibold text-sm text-muted-foreground">Health Breakdown</h4>
-                      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                        <div className="space-y-2">
-                          <div className="flex items-center justify-between text-xs">
-                            <span>Activity</span>
-                            <span className="font-medium">{repo.healthBreakdown.activity}%</span>
-                          </div>
-                          <Progress value={repo.healthBreakdown.activity} className="h-1" />
+                {/* Health Breakdown */}
+                {repo.healthBreakdown && (
+                  <div className="space-y-3 sm:space-y-4">
+                    <h4 className="font-semibold text-xs sm:text-sm text-muted-foreground">Health Breakdown</h4>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+                      <div className="space-y-1 sm:space-y-2">
+                        <div className="flex items-center justify-between text-xs">
+                          <span>Activity</span>
+                          <span className="font-medium">{repo.healthBreakdown.activity}%</span>
                         </div>
-                        <div className="space-y-2">
-                          <div className="flex items-center justify-between text-xs">
-                            <span>Community</span>
-                            <span className="font-medium">{repo.healthBreakdown.community}%</span>
-                          </div>
-                          <Progress value={repo.healthBreakdown.community} className="h-1" />
-                        </div>
-                        <div className="space-y-2">
-                          <div className="flex items-center justify-between text-xs">
-                            <span>Code Quality</span>
-                            <span className="font-medium">{repo.healthBreakdown.codeQuality}%</span>
-                          </div>
-                          <Progress value={repo.healthBreakdown.codeQuality} className="h-1" />
-                        </div>
-                        <div className="space-y-2">
-                          <div className="flex items-center justify-between text-xs">
-                            <span>Documentation</span>
-                            <span className="font-medium">{repo.healthBreakdown.documentation}%</span>
-                          </div>
-                          <Progress value={repo.healthBreakdown.documentation} className="h-1" />
-                        </div>
-                        <div className="space-y-2">
-                          <div className="flex items-center justify-between text-xs">
-                            <span>Security</span>
-                            <span className="font-medium">{repo.healthBreakdown.security}%</span>
-                          </div>
-                          <Progress value={repo.healthBreakdown.security} className="h-1" />
-                        </div>
-                        <div className="space-y-2">
-                          <div className="flex items-center justify-between text-xs">
-                            <span>Maintenance</span>
-                            <span className="font-medium">{repo.healthBreakdown.maintenance}%</span>
-                          </div>
-                          <Progress value={repo.healthBreakdown.maintenance} className="h-1" />
-                        </div>
+                        <Progress value={repo.healthBreakdown.activity} className="h-1" />
                       </div>
-                    </div>
-                  )}
-
-                  {/* Detailed Metrics Grid */}
-                  <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-                    <div className="flex items-center gap-2">
-                      <AlertCircle className="w-4 h-4 text-yellow-500" />
-                      <div>
-                        <p className="text-sm text-muted-foreground">Open Issues</p>
-                        <p className="font-semibold">{repo.open_issues_count || 0}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {repo.open_issues_count === 0 ? 'Perfect' : 
-                           repo.open_issues_count <= 5 ? 'Good' : 
-                           repo.open_issues_count <= 15 ? 'Moderate' : 'Needs attention'}
-                        </p>
+                      <div className="space-y-1 sm:space-y-2">
+                        <div className="flex items-center justify-between text-xs">
+                          <span>Community</span>
+                          <span className="font-medium">{repo.healthBreakdown.community}%</span>
+                        </div>
+                        <Progress value={repo.healthBreakdown.community} className="h-1" />
                       </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <GitPullRequest className="w-4 h-4 text-blue-500" />
-                      <div>
-                        <p className="text-sm text-muted-foreground">Open PRs</p>
-                        <p className="font-semibold">{repo.openPRs || 0}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {repo.openPRs === 0 ? 'Perfect' : 
-                           repo.openPRs <= 3 ? 'Good' : 
-                           repo.openPRs <= 10 ? 'Moderate' : 'Needs attention'}
-                        </p>
+                      <div className="space-y-1 sm:space-y-2">
+                        <div className="flex items-center justify-between text-xs">
+                          <span>Code Quality</span>
+                          <span className="font-medium">{repo.healthBreakdown.codeQuality}%</span>
+                        </div>
+                        <Progress value={repo.healthBreakdown.codeQuality} className="h-1" />
                       </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Star className="w-4 h-4 text-yellow-500" />
-                      <div>
-                        <p className="text-sm text-muted-foreground">Stars</p>
-                        <p className="font-semibold">{repo.stargazers_count || 0}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {repo.stargazers_count > 1000 ? 'Excellent' : 
-                           repo.stargazers_count > 100 ? 'Good' : 
-                           repo.stargazers_count > 10 ? 'Moderate' : 'Growing'}
-                        </p>
+                      <div className="space-y-1 sm:space-y-2">
+                        <div className="flex items-center justify-between text-xs">
+                          <span>Documentation</span>
+                          <span className="font-medium">{repo.healthBreakdown.documentation}%</span>
+                        </div>
+                        <Progress value={repo.healthBreakdown.documentation} className="h-1" />
                       </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <GitFork className="w-4 h-4 text-primary" />
-                      <div>
-                        <p className="text-sm text-muted-foreground">Forks</p>
-                        <p className="font-semibold">{repo.forks_count || 0}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {repo.forks_count > 500 ? 'Excellent' : 
-                           repo.forks_count > 50 ? 'Good' : 
-                           repo.forks_count > 5 ? 'Moderate' : 'Growing'}
-                        </p>
+                      <div className="space-y-1 sm:space-y-2">
+                        <div className="flex items-center justify-between text-xs">
+                          <span>Security</span>
+                          <span className="font-medium">{repo.healthBreakdown.security}%</span>
+                        </div>
+                        <Progress value={repo.healthBreakdown.security} className="h-1" />
                       </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Activity className="w-4 h-4 text-primary" />
-                      <div>
-                        <p className="text-sm text-muted-foreground">Activity</p>
-                        <p className="font-semibold">
-                          {repo.pushed_at ? 
-                            (() => {
-                              const daysAgo = Math.floor((Date.now() - new Date(repo.pushed_at).getTime()) / (1000 * 60 * 60 * 24));
-                              if (daysAgo < 7) return 'Very Active';
-                              if (daysAgo < 30) return 'Active';
-                              if (daysAgo < 90) return 'Moderate';
-                              return 'Low';
-                            })() : 'Unknown'
-                          }
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          {repo.pushed_at ? 
-                            `${Math.floor((Date.now() - new Date(repo.pushed_at).getTime()) / (1000 * 60 * 60 * 24))} days ago` : 
-                            'No recent activity'
-                          }
-                        </p>
+                      <div className="space-y-1 sm:space-y-2">
+                        <div className="flex items-center justify-between text-xs">
+                          <span>Maintenance</span>
+                          <span className="font-medium">{repo.healthBreakdown.maintenance}%</span>
+                        </div>
+                        <Progress value={repo.healthBreakdown.maintenance} className="h-1" />
                       </div>
                     </div>
                   </div>
+                )}
 
-                  {/* Additional Repository Info */}
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t">
-                    <div className="space-y-2">
-                      <p className="text-sm font-medium">Repository Details</p>
-                      <div className="space-y-1 text-xs text-muted-foreground">
-                        <p>Language: {repo.language || 'Unknown'}</p>
-                        <p>Size: {repo.size ? `${Math.round(repo.size / 1024)} KB` : 'Unknown'}</p>
-                        <p>Created: {repo.created_at ? new Date(repo.created_at).toLocaleDateString() : 'Unknown'}</p>
-                      </div>
+                {/* Detailed Metrics Grid - Mobile Responsive */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
+                  <div className="flex items-center gap-2 p-2 sm:p-3 bg-muted/30 rounded-lg">
+                    <AlertCircle className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-500 flex-shrink-0" />
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs sm:text-sm text-muted-foreground truncate">Open Issues</p>
+                      <p className="font-semibold text-sm sm:text-base">{repo.open_issues_count || 0}</p>
+                      <p className="text-xs text-muted-foreground truncate">
+                        {repo.open_issues_count === 0 ? 'Perfect' : 
+                         repo.open_issues_count <= 5 ? 'Good' : 
+                         repo.open_issues_count <= 15 ? 'Moderate' : 'Needs attention'}
+                      </p>
                     </div>
-                    <div className="space-y-2">
-                      <p className="text-sm font-medium">Documentation</p>
-                      <div className="space-y-1 text-xs text-muted-foreground">
-                        <p>README: {repo.has_readme ? '✅' : '❌'}</p>
-                        <p>License: {repo.license ? '✅' : '❌'}</p>
-                        <p>Wiki: {repo.has_wiki ? '✅' : '❌'}</p>
-                      </div>
+                  </div>
+                  <div className="flex items-center gap-2 p-2 sm:p-3 bg-muted/30 rounded-lg">
+                    <GitPullRequest className="w-4 h-4 sm:w-5 sm:h-5 text-blue-500 flex-shrink-0" />
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs sm:text-sm text-muted-foreground truncate">Open PRs</p>
+                      <p className="font-semibold text-sm sm:text-base">{repo.openPRs || 0}</p>
+                      <p className="text-xs text-muted-foreground truncate">
+                        {repo.openPRs === 0 ? 'Perfect' : 
+                         repo.openPRs <= 3 ? 'Good' : 
+                         repo.openPRs <= 10 ? 'Moderate' : 'Needs attention'}
+                      </p>
                     </div>
-                    <div className="space-y-2">
-                      <p className="text-sm font-medium">Security & Maintenance</p>
-                      <div className="space-y-1 text-xs text-muted-foreground">
-                        <p>Security Policy: {repo.has_security_policy ? '✅' : '❌'}</p>
-                        <p>Dependabot: {repo.has_dependabot ? '✅' : '❌'}</p>
-                        <p>CI/CD: {repo.has_ci ? '✅' : '❌'}</p>
-                      </div>
+                  </div>
+                  <div className="flex items-center gap-2 p-2 sm:p-3 bg-muted/30 rounded-lg">
+                    <Star className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-500 flex-shrink-0" />
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs sm:text-sm text-muted-foreground truncate">Stars</p>
+                      <p className="font-semibold text-sm sm:text-base">{repo.stargazers_count || 0}</p>
+                      <p className="text-xs text-muted-foreground truncate">
+                        {repo.stargazers_count > 1000 ? 'Excellent' : 
+                         repo.stargazers_count > 100 ? 'Good' : 
+                         repo.stargazers_count > 10 ? 'Moderate' : 'Growing'}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 p-2 sm:p-3 bg-muted/30 rounded-lg">
+                    <GitFork className="w-4 h-4 sm:w-5 sm:h-5 text-primary flex-shrink-0" />
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs sm:text-sm text-muted-foreground truncate">Forks</p>
+                      <p className="font-semibold text-sm sm:text-base">{repo.forks_count || 0}</p>
+                      <p className="text-xs text-muted-foreground truncate">
+                        {repo.forks_count > 500 ? 'Excellent' : 
+                         repo.forks_count > 50 ? 'Good' : 
+                         repo.forks_count > 5 ? 'Moderate' : 'Growing'}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 p-2 sm:p-3 bg-muted/30 rounded-lg">
+                    <Activity className="w-4 h-4 sm:w-5 sm:h-5 text-primary flex-shrink-0" />
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs sm:text-sm text-muted-foreground truncate">Activity</p>
+                      <p className="font-semibold text-sm sm:text-base">
+                        {repo.pushed_at ? 
+                          (() => {
+                            const daysAgo = Math.floor((Date.now() - new Date(repo.pushed_at).getTime()) / (1000 * 60 * 60 * 24));
+                            if (daysAgo < 7) return 'Very Active';
+                            if (daysAgo < 30) return 'Active';
+                            if (daysAgo < 90) return 'Moderate';
+                            return 'Low';
+                          })() : 'Unknown'
+                        }
+                      </p>
+                      <p className="text-xs text-muted-foreground truncate">
+                        {repo.pushed_at ? 
+                          `${Math.floor((Date.now() - new Date(repo.pushed_at).getTime()) / (1000 * 60 * 60 * 24))} days ago` : 
+                          'No recent activity'
+                        }
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Additional Repository Info - Mobile Responsive */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4 pt-3 sm:pt-4 border-t">
+                  <div className="space-y-2">
+                    <p className="text-xs sm:text-sm font-medium">Repository Details</p>
+                    <div className="space-y-1 text-xs text-muted-foreground">
+                      <p>Language: {repo.language || 'Unknown'}</p>
+                      <p>Size: {repo.size ? `${Math.round(repo.size / 1024)} KB` : 'Unknown'}</p>
+                      <p>Created: {repo.created_at ? new Date(repo.created_at).toLocaleDateString() : 'Unknown'}</p>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <p className="text-xs sm:text-sm font-medium">Documentation</p>
+                    <div className="space-y-1 text-xs text-muted-foreground">
+                      <p>README: {repo.has_readme ? '✅' : '❌'}</p>
+                      <p>License: {repo.license ? '✅' : '❌'}</p>
+                      <p>Wiki: {repo.has_wiki ? '✅' : '❌'}</p>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <p className="text-xs sm:text-sm font-medium">Security & Maintenance</p>
+                    <div className="space-y-1 text-xs text-muted-foreground">
+                      <p>Security Policy: {repo.has_security_policy ? '✅' : '❌'}</p>
+                      <p>Dependabot: {repo.has_dependabot ? '✅' : '❌'}</p>
+                      <p>CI/CD: {repo.has_ci ? '✅' : '❌'}</p>
                     </div>
                   </div>
                 </div>

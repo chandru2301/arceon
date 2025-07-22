@@ -135,67 +135,75 @@ export default function CommunityActivityPage() {
     <div className="min-h-screen bg-gradient-to-br from-background via-background/95 to-primary/5">
       <GitHubHeader />
       
-      <main className="container mx-auto px-4 py-8">
-        <div className="mb-8 flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold mb-2 flex items-center gap-2">
-              <Users className="w-8 h-8 text-primary" />
-              Community Activity
-            </h1>
-            <p className="text-muted-foreground">
-              Activity from your followers and starred repositories
-              {communityStats && (
-                <span className="ml-2 text-sm">
-                  • {followers.length} recent followers • {starredActivity.length} starred repos
-                </span>
-              )}
-            </p>
-            {lastUpdated && (
-              <p className="text-xs text-muted-foreground mt-1">
-                Last updated: {lastUpdated.toLocaleTimeString()}
+      <main className="container mx-auto px-4 py-6 sm:py-8">
+        {/* Header Section - Mobile Responsive */}
+        <div className="mb-6 sm:mb-8">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="flex-1">
+              <h1 className="text-2xl sm:text-3xl font-bold mb-2 flex items-center gap-2">
+                <Users className="w-6 h-6 sm:w-8 sm:h-8 text-primary" />
+                <span className="text-xl sm:text-3xl">Community Activity</span>
+              </h1>
+              <p className="text-sm sm:text-base text-muted-foreground">
+                Activity from your followers and starred repositories
+                {communityStats && (
+                  <span className="block sm:inline sm:ml-2 text-xs sm:text-sm mt-1 sm:mt-0">
+                    • {followers.length} recent followers • {starredActivity.length} starred repos
+                  </span>
+                )}
               </p>
-            )}
+              {lastUpdated && (
+                <p className="text-xs text-muted-foreground mt-1">
+                  Last updated: {lastUpdated.toLocaleTimeString()}
+                </p>
+              )}
+            </div>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={handleRefresh}
+              disabled={refreshing}
+              className="flex items-center gap-2 w-full sm:w-auto"
+            >
+              <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
+              <span className="hidden sm:inline">Refresh</span>
+              <span className="sm:hidden">Refresh</span>
+            </Button>
           </div>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={handleRefresh}
-            disabled={refreshing}
-            className="flex items-center gap-2"
-          >
-            <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
-            Refresh
-          </Button>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* Main Content Grid - Mobile Responsive */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
           {/* Follower Activity */}
           <Card className="glass-card">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
+            <CardHeader className="pb-4">
+              <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
                 <UserPlus className="w-5 h-5 text-primary" />
-                Recent Followers & Interactions
+                <span className="text-base sm:text-xl">Recent Followers & Interactions</span>
               </CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="pt-0">
               {followers.length > 0 ? (
-                <div className="space-y-4">
+                <div className="space-y-3 sm:space-y-4">
                   {followers.map((follower, index) => (
-                    <div key={index} className="flex items-center gap-3 p-3 rounded-lg hover:bg-background/20 transition-colors">
-                      <Avatar className="w-10 h-10">
-                        <AvatarImage src={follower.avatar} alt={follower.name} />
-                        <AvatarFallback>{follower.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1">
-                        <p className="font-medium">{follower.name}</p>
-                        <p className="text-sm text-muted-foreground">@{follower.username}</p>
-                        <p className="text-sm">{follower.action}</p>
-                        <p className="text-xs text-muted-foreground">{formatTimeAgo(follower.time)}</p>
+                    <div key={index} className="flex flex-col sm:flex-row sm:items-center gap-3 p-3 rounded-lg hover:bg-background/20 transition-colors">
+                      <div className="flex items-center gap-3 flex-1">
+                        <Avatar className="w-10 h-10 flex-shrink-0">
+                          <AvatarImage src={follower.avatar} alt={follower.name} />
+                          <AvatarFallback>{follower.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-sm sm:text-base truncate">{follower.name}</p>
+                          <p className="text-xs sm:text-sm text-muted-foreground truncate">@{follower.username}</p>
+                          <p className="text-xs sm:text-sm truncate">{follower.action}</p>
+                          <p className="text-xs text-muted-foreground">{formatTimeAgo(follower.time)}</p>
+                        </div>
                       </div>
                       <Button 
                         variant="outline" 
                         size="sm"
                         onClick={() => handleViewProfile(follower.username)}
+                        className="w-full sm:w-auto mt-2 sm:mt-0"
                       >
                         View Profile
                       </Button>
@@ -205,7 +213,7 @@ export default function CommunityActivityPage() {
               ) : (
                 <div className="text-center py-8 text-muted-foreground">
                   <UserPlus className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                  <p>No recent followers found</p>
+                  <p className="text-sm sm:text-base">No recent followers found</p>
                 </div>
               )}
             </CardContent>
@@ -213,22 +221,22 @@ export default function CommunityActivityPage() {
 
           {/* Starred Repo Activity */}
           <Card className="glass-card">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
+            <CardHeader className="pb-4">
+              <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
                 <Star className="w-5 h-5 text-primary" />
-                Starred Repository Activity
+                <span className="text-base sm:text-xl">Starred Repository Activity</span>
               </CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="pt-0">
               {starredActivity.length > 0 ? (
-                <div className="space-y-4">
+                <div className="space-y-3 sm:space-y-4">
                   {starredActivity.map((activity, index) => (
                     <div key={index} className="p-3 rounded-lg hover:bg-background/20 transition-colors">
-                      <div className="flex items-center gap-2 mb-1">
-                        <Star className="w-4 h-4 text-yellow-500" />
-                        <span className="font-medium">{activity.repo}</span>
+                      <div className="flex items-center gap-2 mb-2">
+                        <Star className="w-4 h-4 text-yellow-500 flex-shrink-0" />
+                        <span className="font-medium text-sm sm:text-base truncate">{activity.repo}</span>
                       </div>
-                      <p className="text-sm">{activity.activity}</p>
+                      <p className="text-xs sm:text-sm mb-1">{activity.activity}</p>
                       <p className="text-xs text-muted-foreground">{formatTimeAgo(activity.time)}</p>
                     </div>
                   ))}
@@ -236,40 +244,40 @@ export default function CommunityActivityPage() {
               ) : (
                 <div className="text-center py-8 text-muted-foreground">
                   <Star className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                  <p>No starred repositories found</p>
+                  <p className="text-sm sm:text-base">No starred repositories found</p>
                 </div>
               )}
             </CardContent>
           </Card>
         </div>
 
-        {/* Community Stats */}
+        {/* Community Stats - Mobile Responsive */}
         {communityStats && (
-          <Card className="glass-card mt-8">
-            <CardHeader>
-              <CardTitle>Community Impact</CardTitle>
+          <Card className="glass-card mt-6 sm:mt-8">
+            <CardHeader className="pb-4">
+              <CardTitle className="text-lg sm:text-xl">Community Impact</CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <CardContent className="pt-0">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6">
                 <div className="text-center">
-                  <Users className="w-8 h-8 text-primary mx-auto mb-2" />
-                  <p className="text-2xl font-bold">{communityStats.followers?.toLocaleString() || 0}</p>
-                  <p className="text-sm text-muted-foreground">Total followers</p>
+                  <Users className="w-6 h-6 sm:w-8 sm:h-8 text-primary mx-auto mb-2" />
+                  <p className="text-lg sm:text-2xl font-bold">{communityStats.followers?.toLocaleString() || 0}</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground">Total followers</p>
                 </div>
                 <div className="text-center">
-                  <Star className="w-8 h-8 text-yellow-500 mx-auto mb-2" />
-                  <p className="text-2xl font-bold">{communityStats.public_repos?.toLocaleString() || 0}</p>
-                  <p className="text-sm text-muted-foreground">Public repositories</p>
+                  <Star className="w-6 h-6 sm:w-8 sm:h-8 text-yellow-500 mx-auto mb-2" />
+                  <p className="text-lg sm:text-2xl font-bold">{communityStats.public_repos?.toLocaleString() || 0}</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground">Public repositories</p>
                 </div>
                 <div className="text-center">
-                  <GitFork className="w-8 h-8 text-blue-500 mx-auto mb-2" />
-                  <p className="text-2xl font-bold">{communityStats.following?.toLocaleString() || 0}</p>
-                  <p className="text-sm text-muted-foreground">Following</p>
+                  <GitFork className="w-6 h-6 sm:w-8 sm:h-8 text-blue-500 mx-auto mb-2" />
+                  <p className="text-lg sm:text-2xl font-bold">{communityStats.following?.toLocaleString() || 0}</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground">Following</p>
                 </div>
                 <div className="text-center">
-                  <Eye className="w-8 h-8 text-green-500 mx-auto mb-2" />
-                  <p className="text-2xl font-bold">{communityStats.public_gists?.toLocaleString() || 0}</p>
-                  <p className="text-sm text-muted-foreground">Public gists</p>
+                  <Eye className="w-6 h-6 sm:w-8 sm:h-8 text-green-500 mx-auto mb-2" />
+                  <p className="text-lg sm:text-2xl font-bold">{communityStats.public_gists?.toLocaleString() || 0}</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground">Public gists</p>
                 </div>
               </div>
             </CardContent>

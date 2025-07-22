@@ -464,6 +464,12 @@ export function GitHubHeader() {
                               Achievements
                             </Link>
                           </Button>
+                          <Button variant="ghost" className="w-full justify-start pl-6" asChild>
+                          <Link to="/activity/community" onClick={() => setIsMobileMenuOpen(false)}>
+                          <Users className="w-4 h-4 mr-3" />
+                          Community Activity
+                        </Link>
+                        </Button>
                         </div>
                       </div>
 
