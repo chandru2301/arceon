@@ -45,7 +45,7 @@ export default function StarredProjectsPage() {
     <div className="min-h-screen bg-gradient-to-br from-background via-background/95 to-primary/5">
       <GitHubHeader />
       
-      <main className="container mx-auto px-4 py-8">
+      <main className="w-full px-4 py-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2 flex items-center gap-2">
             <Star className="w-8 h-8 text-primary" />

@@ -43,7 +43,7 @@ export default function FeaturedProjectsPage() {
     <div className="min-h-screen bg-gradient-to-br from-background via-background/95 to-primary/5">
       <GitHubHeader />
       
-      <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 lg:py-8">
+      <main className="w-full px-3 sm:px-4 py-4 sm:py-6 lg:py-8">
         {/* Header Section - Mobile Responsive */}
         <div className="mb-4 sm:mb-6 lg:mb-8">
           <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold mb-2 flex items-center gap-2">

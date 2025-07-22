@@ -34,7 +34,7 @@ export default function MyProjectsPage() {
     <div className="min-h-screen bg-gradient-to-br from-background via-background/95 to-primary/5">
       <GitHubHeader />
       
-      <main className="container mx-auto px-4 py-8">
+      <main className="w-full px-4 py-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2">My Projects</h1>
           <p className="text-muted-foreground">Repositories owned by you</p>

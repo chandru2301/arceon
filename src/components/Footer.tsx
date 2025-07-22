@@ -7,7 +7,7 @@ export function Footer() {
 
   return (
     <footer className="glass-header border-t border-border/50 mt-16">
-      <div className="container mx-auto px-4 py-8">
+      <div className="w-full px-4 py-3">
         <div className="flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0">
           {/* Left Section */}
           <div className="flex items-center space-x-4">

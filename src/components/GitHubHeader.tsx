@@ -99,7 +99,7 @@ export function GitHubHeader() {
 
   return (
     <header className="glass-header sticky top-0 z-50">
-      <div className="container mx-auto px-4 py-3">
+      <div className="w-full px-4 py-3">
         {/* Main Header */}
         <div className="flex items-center justify-between">
           {/* Profile Section */}

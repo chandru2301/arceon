@@ -15,7 +15,7 @@ export default function SettingsPage() {
     <div className="min-h-screen bg-gradient-to-br from-background via-background/95 to-primary/5">
       <GitHubHeader />
       
-      <main className="container mx-auto px-4 py-8 max-w-4xl">
+      <main className="w-full px-4 py-8 max-w-4xl">
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2 flex items-center gap-2">
             <Settings className="w-8 h-8 text-primary" />

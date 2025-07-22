@@ -125,7 +125,7 @@ export function RecentCommits() {
 
   if (!isAuthenticated) {
     return (
-      <section className="container mx-auto px-4 py-8">
+      <section className="w-full px-4 py-8">
         <div className="text-center">
           <h2 className="text-2xl font-bold mb-4">Recent Activity</h2>
           <p className="text-muted-foreground">Please log in to view your recent activity</p>
@@ -137,7 +137,7 @@ export function RecentCommits() {
   return (
     <section
       ref={ref}
-      className={`container mx-auto px-4 py-8 ${isIntersecting ? 'scroll-float' : ''}`}
+      className={`w-full px-4 py-8 ${isIntersecting ? 'scroll-float' : ''}`}
     >
       <div className="scroll-reveal delay-1">
         <h2 className="text-2xl font-bold mb-6">Recent Activity</h2>

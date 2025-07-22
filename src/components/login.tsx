@@ -29,7 +29,7 @@ export function Login() {
   };
   
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-background to-muted/30">
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-background via-background/95 to-primary/5">
       <div className="w-full max-w-md p-4">
         <Card className="w-full border-opacity-50 shadow-lg backdrop-blur-sm bg-card/95">
           <CardHeader className="space-y-2 text-center">

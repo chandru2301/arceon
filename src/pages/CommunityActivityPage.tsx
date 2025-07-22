@@ -99,7 +99,7 @@ export default function CommunityActivityPage() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-background via-background/95 to-primary/5">
         <GitHubHeader />
-        <main className="container mx-auto px-4 py-8">
+        <main className="w-full px-4 py-8">
           <div className="flex items-center justify-center min-h-[400px]">
             <div className="flex items-center gap-3">
               <Loader2 className="w-6 h-6 animate-spin text-primary" />
@@ -135,7 +135,7 @@ export default function CommunityActivityPage() {
     <div className="min-h-screen bg-gradient-to-br from-background via-background/95 to-primary/5">
       <GitHubHeader />
       
-      <main className="container mx-auto px-4 py-6 sm:py-8">
+      <main className="w-full px-4 py-6 sm:py-8">
         {/* Header Section - Mobile Responsive */}
         <div className="mb-6 sm:mb-8">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">

@@ -312,7 +312,7 @@ export function ActivityGraph() {
 
   if (!isAuthenticated) {
     return (
-      <section className="container mx-auto px-4 py-6 sm:py-8">
+      <section className="w-full px-4 py-6 sm:py-8">
         <div className="text-center">
           <h2 className="text-xl sm:text-2xl font-bold mb-4">Activity Graph</h2>
           <p className="text-sm sm:text-base text-muted-foreground">Please log in to view your activity graph</p>
@@ -326,7 +326,7 @@ export function ActivityGraph() {
   return (
     <section 
       ref={ref}
-      className={`container mx-auto px-4 py-6 sm:py-8 ${isIntersecting ? 'scroll-float' : ''}`}
+      className={`w-full px-4 py-6 sm:py-8 ${isIntersecting ? 'scroll-float' : ''}`}
     >
       <div className="scroll-reveal delay-1">
         <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6">Activity Graph</h2>

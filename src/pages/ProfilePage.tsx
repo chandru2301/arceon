@@ -117,8 +117,8 @@ export default function ProfilePage() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-background via-background/95 to-primary/5">
         <GitHubHeader />
-        <main className="container mx-auto px-4 py-8">
-          <div className="flex items-center justify-center min-h-[400px]">
+        <main className="w-full px-4 py-8">
+          <div className="flex items-center justify-center min-h-[400px] w-full">
             <div className="text-center">
               <p className="text-lg text-red-500 mb-4">{error}</p>
               <Button onClick={() => navigate('/dashboard')}>
@@ -140,8 +140,8 @@ export default function ProfilePage() {
           <Loader2 className="w-8 h-8 animate-spin" />
         </div>
       ) : (
-      <main className="container mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <main className="w-full px-4 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 w-full">
           {/* Profile Info */}
           <div className="lg:col-span-1">
             <Card className="glass-card">
